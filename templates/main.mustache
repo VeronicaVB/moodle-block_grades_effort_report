@@ -1,0 +1,55 @@
+{{!
+This file is part of Moodle - http://moodle.org/
+
+Moodle is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Moodle is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Moodle. If not, see
+<http: //www.gnu.org/licenses />.
+
+@package block_grades_effort_report
+@copyright 2021 Veronica Bermegui
+@license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+
+}}
+
+<section class="node_category card d-inline-block w-100 mb-3">
+    <div class="card-body">
+        <h3 class="lead">{{#str}} gradesandeffortreportitle, block_grades_effort_report {{/str}}</h3>
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col">
+                    <a href="#" data-toggle="collapse" data-target="#collapsehistory" aria-expanded="false"
+                        aria-controls="collapseExample">
+                        <div class="badge-actions"></div>
+                        <span class="badge-name">{{#str}} gradehistory, block_grades_effort_report {{/str}}</span>
+                    </a>
+                    <div class='collapse' id="collapsehistory">
+                        {{> block_grades_effort_report/grades_history}}
+                    </div>
+
+                    <a href="#" data-toggle="collapse" data-target="#collapseeffort" aria-expanded="false"
+                        aria-controls="collapseExample">
+                        <div class="badge-actions"></div>
+                        <span class="badge-name">{{#str}} efforthistory, block_grades_effort_report {{/str}}</span>
+                    </a>
+                    <div class='collapse' id="collapseeffort">
+                        {{> block_grades_effort_report/effort_history}}
+                    </div>
+                </div>
+
+            </div>
+
+
+
+        </div>
+    </div>
+</section>
