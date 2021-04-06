@@ -41,7 +41,9 @@ $string['dbefforthistory'] = 'Effort Grades';
 $string['dbefforthistory_desc'] = 'Stored procedure name to retrieve student academic effort by ID';
 $string['dbperformancetrend'] = 'Performance Trend';
 $string['dbperformancetrend_desc'] = 'Stored procedure name to retrieve student performance trend by ID';
-$string['nodbsettings'] = 'Missing DB configuration';
+$string['profileurl'] = '';
+$string['profileurl'] = 'Profile URL';
+$string['profileurl_desc'] =' Moodle\'s profile URL';
 
 $string['gradesandeffortreportitle'] = 'CGS Grades and Effort Report';
 $string['gradehistory'] = 'Grade History';
