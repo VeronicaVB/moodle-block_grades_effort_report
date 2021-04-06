@@ -59,7 +59,7 @@ function get_academic_grades($username)
 
         $result->close();
 
-
+      
         return $academicgrades;
     } catch (\Exception $ex) {
         throw $ex;
@@ -94,6 +94,7 @@ function get_academic_efforts($username)
         $result->close();
 
         return $academiceffort;
+
     } catch (\Exception $ex) {
         throw $ex;
     }
@@ -103,7 +104,6 @@ function get_templates_contexts($username)
 {
 
     $context = array_merge(get_templates_context('grades', $username),  get_templates_context('effort', $username));
-
     return $context;
 }
 
@@ -111,7 +111,10 @@ function get_templates_context($tabletorender, $username)
 {
 
     $gradesdata = $tabletorender == 'grades' ?  get_academic_grades($username) : get_academic_efforts($username);
-
+   
+    if (empty($gradesdata)) {
+        return [];
+    }
     $yearlevels['year'] = [];
     $yearlabels['labels'] = [];
     $subjects['subjects'] = [];
@@ -319,6 +322,7 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
             }
         }
 
+       
         return  $grades;
     }
 }
