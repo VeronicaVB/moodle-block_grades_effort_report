@@ -39,7 +39,7 @@ class block_grades_effort_report extends block_base
         if ($this->content !== null) {
             return $this->content;
         }
-       
+
 
         $config = get_config('block_grades_effort_report');
 
@@ -67,22 +67,16 @@ class block_grades_effort_report extends block_base
         }
 
         $this->content = new \stdClass();
-        
-        if (grades_effort_report\can_view_on_profile()) {
-       
-            $profileuser = $DB->get_record('user', ['id' => $PAGE->url->get_param('id')]);          
-         
-            $data = grades_effort_report\get_templates_contexts($profileuser->username);
-          
-            $this->content->text = $OUTPUT->render_from_template('block_assignmentsquizzes_report/main', $data);
-            
-        } else {
-            $this->content->text = get_string('reportunavailable', 'block_assignmentsquizzes_report');
+        $this->content->text = '';
+        try {
+            if (grades_effort_report\can_view_on_profile()) {
+
+                $profileuser = $DB->get_record('user', ['id' => $PAGE->url->get_param('id')]);
+                $data = grades_effort_report\get_templates_contexts($profileuser->username); 
+                $this->content->text = $OUTPUT->render_from_template('block_grades_effort_report/main', $data);
+            }
+        } catch (\Exception $e) {
         }
-
-
-
-        $this->content->text = $OUTPUT->render_from_template('block_grades_effort_report/main', $data);
     }
 
     public function instance_allow_multiple()

@@ -54,7 +54,7 @@ $string['gradeslabel'] = 'Grades';
 $string['learningarealabel'] = 'Learning area';
 $string['classlabel'] = 'Class';
 
-$string['reportunavailable'] = 'Report unavailable';
+$string['reportunavailable'] = 'Grades and Effort Report unavailable';
 
 
 

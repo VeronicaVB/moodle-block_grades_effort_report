@@ -40,7 +40,7 @@
           <tr>    
               <th></th>
 
-              {{#years}}
+              {{#years_effort}}
               {{#labels}}
                   {{#termlabels}}   
                       <th>{{t1}}</th>
@@ -49,17 +49,20 @@
                       <th>{{t4}}</th>  
                   {{/termlabels}}
               {{/labels}}
-              {{/years}}
+              {{/years_effort}}
           </tr>
 
           
           {{#subjectdetails_effort}}
           {{#classes}}
-              <tr class="w-25">
+              <tr>
                   <td>{{name}}</td>
                   {{#grades}} 
                       {{#grade}}
-                      <td>{{grade}}</td>
+                      <td data-html="true" data-toggle="tooltip" data-placement="bottom" title ="{{{notes}}}">
+                          {{grade}}
+                      
+                      </td>
                       {{/grade}}
                   {{/grades}}
               </tr>
