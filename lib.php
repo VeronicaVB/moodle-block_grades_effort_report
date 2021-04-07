@@ -340,7 +340,7 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
 
                     if (is_array($term)) {
                         if (isset($term['e'])) {
-                            var_dump($term['e']);
+                            
                             $gradeaux->grade = $term['g'];
                             $gradeaux->notes = (str_replace("[:]", "<br>", $term['e']));
                         }
