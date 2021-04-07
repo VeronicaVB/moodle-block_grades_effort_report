@@ -418,6 +418,10 @@ function get_performance_trend_context($username)
     $results = get_performance_trend($username);
     $trends = [];
 
+    if (empty($results)) {
+        return [];
+    }
+
     foreach ($results as $i => $result) {
         $summary = new \stdClass();
         $summary->assessresultsresultcalc = $result->assessresultsresultcalc;
