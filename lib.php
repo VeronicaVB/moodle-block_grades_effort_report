@@ -177,7 +177,7 @@ function get_templates_context($tabletorender, $username)
             'year' => $data->studentyearlevel,
             'term' => $data->filesemester,
             'grade' => $data->assessresultsresult,
-            'performance' => $tabletorender == 'performance' ? $data->performancestuff : ''
+            'effort' => $tabletorender == 'effort' ? $data->effortstuff : ''
         ];
 
         $subjects['subjects'][$data->classlearningareadescription][$data->classdescription][] = [
@@ -191,7 +191,7 @@ function get_templates_context($tabletorender, $username)
         foreach ($subjects as $s => $subject) {
             $classdetails = new \stdClass();
             $classdetails->name = $s;
-            if ($tabletorender == 'performance') {
+            if ($tabletorender == 'effort') {
                 $classdetails->grades = fill_dummy_grades($grades[$s], $yearlabels, true);
             } else {
                 $classdetails->grades = fill_dummy_grades($grades[$s], $yearlabels);
@@ -229,7 +229,7 @@ function find_subject($classes, $name)
 }
 
 
-function fill_dummy_grades($grades, $yearlabels, $performance = false)
+function fill_dummy_grades($grades, $yearlabels, $effort = false)
 {
     $countyears = count($yearlabels['labels']);
     $totaltermstograde = $countyears * 4; // Each year has 4 terms;
@@ -241,7 +241,7 @@ function fill_dummy_grades($grades, $yearlabels, $performance = false)
     $latestyear = end($latestyear);
 
     if ($missingterms > 0) {
-        $grades =  add_dummy_grade_position($grades['grade'], $earliestyear, $latestyear, $totaltermstograde, $performance);
+        $grades =  add_dummy_grade_position($grades['grade'], $earliestyear, $latestyear, $totaltermstograde, $effort);
     }
 
     return $grades;
@@ -249,7 +249,7 @@ function fill_dummy_grades($grades, $yearlabels, $performance = false)
 
 // $earliestyear = The first year the sp brings back.
 // $latestyear = The last year the sp brings back.
-function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totaltermstograde, $performance = false)
+function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totaltermstograde, $effort = false)
 {
     $counttermspergrade = [];
     $dummygrade = new \stdClass();
@@ -261,12 +261,12 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
 
             if ($gr == 'year') {
 
-                if (!$performance) {
+                if (!$effort) {
                     $g = new \stdClass();
                     $g->grade =  $grade['grade'];
                     $counttermspergrade[$gra][$grade['term']] = $g;
                 } else {
-                    $counttermspergrade[$gra][$grade['term']] = ['g' => $grade['grade'], 'e' => $grade['performance']];
+                    $counttermspergrade[$gra][$grade['term']] = ['g' => $grade['grade'], 'e' => $grade['effort']];
                 }
             }
         }
@@ -332,7 +332,7 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
         }
         $grades = [];
         // Rearange the array to feed the template.
-        if ($performance) {
+        if ($effort) {
             foreach ($results as $r => &$terms) {
                 foreach ($terms as $t => $term) {
                     $gradeaux = new \stdClass();
@@ -340,6 +340,7 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
 
                     if (is_array($term)) {
                         if (isset($term['e'])) {
+                            var_dump($term['e']);
                             $gradeaux->grade = $term['g'];
                             $gradeaux->notes = (str_replace("[:]", "<br>", $term['e']));
                         }
@@ -358,7 +359,7 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
             }
         }
 
-
+      
         return  $grades;
     }
 }
