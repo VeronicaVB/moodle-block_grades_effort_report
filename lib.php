@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Grades and Effort block
+ * Grades and performance block
  *
  * @package   block_grades_effort_report
  * @copyright 2021 Veronica Bermegui
@@ -59,7 +59,7 @@ function get_academic_grades($username)
 
         $result->close();
 
-      
+
         return $academicgrades;
     } catch (\Exception $ex) {
         throw $ex;
@@ -94,7 +94,39 @@ function get_academic_efforts($username)
         $result->close();
 
         return $academiceffort;
+    } catch (\Exception $ex) {
+        throw $ex;
+    }
+}
 
+function get_performance_trend($username)
+{
+    try {
+
+        $config = get_config('block_grades_effort_report');
+
+        // Last parameter (external = true) means we are not connecting to a Moodle database.
+        $externalDB = \moodle_database::get_driver_instance($config->dbtype, 'native', true);
+
+        // Connect to external DB
+        $externalDB->connect($config->dbhost, $config->dbuser, $config->dbpass, $config->dbname, '');
+
+        $sql = 'EXEC ' . $config->dbperformancetrend . ' :id';
+
+        $params = array(
+            'id' => $username,
+        );
+
+        $result = $externalDB->get_recordset_sql($sql, $params);
+        $performancetrends = [];
+
+        foreach ($result as $performance) {
+            $performancetrends[] = $performance;
+        }
+
+        $result->close();
+
+        return $performancetrends;
     } catch (\Exception $ex) {
         throw $ex;
     }
@@ -103,7 +135,11 @@ function get_academic_efforts($username)
 function get_templates_contexts($username)
 {
 
-    $context = array_merge(get_templates_context('grades', $username),  get_templates_context('effort', $username));
+    $context = array_merge(
+        get_templates_context('grades', $username),
+        get_templates_context('effort', $username),
+        get_performance_trend_context($username)
+    );
     return $context;
 }
 
@@ -111,7 +147,7 @@ function get_templates_context($tabletorender, $username)
 {
 
     $gradesdata = $tabletorender == 'grades' ?  get_academic_grades($username) : get_academic_efforts($username);
-   
+
     if (empty($gradesdata)) {
         return [];
     }
@@ -141,7 +177,7 @@ function get_templates_context($tabletorender, $username)
             'year' => $data->studentyearlevel,
             'term' => $data->filesemester,
             'grade' => $data->assessresultsresult,
-            'effort' => $tabletorender == 'effort' ? $data->effortstuff : ''
+            'performance' => $tabletorender == 'performance' ? $data->performancestuff : ''
         ];
 
         $subjects['subjects'][$data->classlearningareadescription][$data->classdescription][] = [
@@ -151,11 +187,11 @@ function get_templates_context($tabletorender, $username)
     }
 
     foreach ($subjects['subjects'] as $area => $subjects) {
-       
+
         foreach ($subjects as $s => $subject) {
             $classdetails = new \stdClass();
             $classdetails->name = $s;
-            if ($tabletorender == 'effort') {
+            if ($tabletorender == 'performance') {
                 $classdetails->grades = fill_dummy_grades($grades[$s], $yearlabels, true);
             } else {
                 $classdetails->grades = fill_dummy_grades($grades[$s], $yearlabels);
@@ -193,7 +229,7 @@ function find_subject($classes, $name)
 }
 
 
-function fill_dummy_grades($grades, $yearlabels, $effort = false)
+function fill_dummy_grades($grades, $yearlabels, $performance = false)
 {
     $countyears = count($yearlabels['labels']);
     $totaltermstograde = $countyears * 4; // Each year has 4 terms;
@@ -205,7 +241,7 @@ function fill_dummy_grades($grades, $yearlabels, $effort = false)
     $latestyear = end($latestyear);
 
     if ($missingterms > 0) {
-        $grades =  add_dummy_grade_position($grades['grade'], $earliestyear, $latestyear, $totaltermstograde, $effort);
+        $grades =  add_dummy_grade_position($grades['grade'], $earliestyear, $latestyear, $totaltermstograde, $performance);
     }
 
     return $grades;
@@ -213,7 +249,7 @@ function fill_dummy_grades($grades, $yearlabels, $effort = false)
 
 // $earliestyear = The first year the sp brings back.
 // $latestyear = The last year the sp brings back.
-function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totaltermstograde, $effort = false)
+function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totaltermstograde, $performance = false)
 {
     $counttermspergrade = [];
     $dummygrade = new \stdClass();
@@ -225,12 +261,12 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
 
             if ($gr == 'year') {
 
-                if (!$effort) {
+                if (!$performance) {
                     $g = new \stdClass();
                     $g->grade =  $grade['grade'];
                     $counttermspergrade[$gra][$grade['term']] = $g;
                 } else {
-                    $counttermspergrade[$gra][$grade['term']] = ['g' => $grade['grade'], 'e' => $grade['effort']];
+                    $counttermspergrade[$gra][$grade['term']] = ['g' => $grade['grade'], 'e' => $grade['performance']];
                 }
             }
         }
@@ -273,7 +309,7 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
         } else if ($earliest < $latestyear) {  // Fill future years.
             $p = $earliest;
             for ($p; $p <= $latestyear; $p++) {
-                if (!array_key_exists($p, $counttermspergrade)) { 
+                if (!array_key_exists($p, $counttermspergrade)) {
                     $dummyyearsandgrades[$p] = [$dummygrade, $dummygrade, $dummygrade, $dummygrade];
                 }
             }
@@ -282,10 +318,10 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
         $results = $aux + $dummyyearsandgrades;
         ksort($results);
 
-         foreach ($results as $year => &$terms) {
+        foreach ($results as $year => &$terms) {
             if (count($terms) < 4) {
                 for ($j = 1; $j < 5; $j++) {
-                    if (! array_key_exists($j, $terms)) {
+                    if (!array_key_exists($j, $terms)) {
                         $dummygrade = new stdClass();
                         $dummygrade->grade = '';
                         $terms[$j] = $dummygrade;
@@ -296,7 +332,7 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
         }
         $grades = [];
         // Rearange the array to feed the template.
-        if ($effort) {
+        if ($performance) {
             foreach ($results as $r => &$terms) {
                 foreach ($terms as $t => $term) {
                     $gradeaux = new \stdClass();
@@ -304,8 +340,8 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
 
                     if (is_array($term)) {
                         if (isset($term['e'])) {
-                            $gradeaux->grade = $term['g'] ;
-                            $gradeaux->notes = (str_replace ("[:]","<br>", $term['e']));
+                            $gradeaux->grade = $term['g'];
+                            $gradeaux->notes = (str_replace("[:]", "<br>", $term['e']));
                         }
                     }
                     $grades['grade'][] = $gradeaux;
@@ -315,14 +351,14 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
 
             foreach ($results as $year => &$terms) {
                 foreach ($terms as $t => $term) {
-                        $gradeaux = new \stdClass();
-                        $gradeaux->grade = $term->grade;
-                        $grades['grade'][] = $gradeaux;
+                    $gradeaux = new \stdClass();
+                    $gradeaux->grade = $term->grade;
+                    $grades['grade'][] = $gradeaux;
                 }
             }
         }
 
-       
+
         return  $grades;
     }
 }
@@ -334,7 +370,7 @@ function can_view_on_profile()
 
 
     $config = get_config('block_attendance_report');
-    if ($PAGE->url->get_path() ==  $config->profileurl) { 
+    if ($PAGE->url->get_path() ==  $config->profileurl) {
         // Admin is allowed.
         $profileuser = $DB->get_record('user', ['id' => $PAGE->url->get_param('id')]);
 
@@ -375,4 +411,48 @@ function can_view_on_profile()
     }
 
     return false;
+}
+
+function get_performance_trend_context($username)
+{
+    $results = get_performance_trend($username);
+    $trends = [];
+
+    foreach ($results as $i => $result) {
+        $summary = new \stdClass();
+        $summary->assessresultsresultcalc = $result->assessresultsresultcalc;
+        $summary->effortmark = $result->effortmark;
+        $summary->classcountperterm = $result->classcountperterm;
+        $summary->classattendperterm = $result->classattendperterm;
+        $summary->term = $result->filesemester;
+        $summary->subjects = 1;
+
+        if (empty($trends[$result->fileyear][$result->filesemester])) {
+            $trends[$result->fileyear][$result->filesemester] = $summary;
+        } else {
+            $aux = $trends[$result->fileyear][$result->filesemester];
+            $summary->effortmark +=  $aux->effortmark;
+            $summary->assessresultsresultcalc += $aux->assessresultsresultcalc;
+            $summary->classcountperterm += $aux->classcountperterm;
+            $summary->classattendperterm += $aux->classattendperterm;
+            $summary->subjects += $aux->subjects;
+            $trends[$result->fileyear][$result->filesemester] = $summary;
+        }
+    }
+    $context = [];
+
+    foreach ($trends as $year => $summaries) {
+
+        foreach ($summaries as $term => $summary) {
+            $details = new \stdClass();
+            $details->year = $year;
+            $details->term = $term;
+            $details->avggrades = floatval(round($summary->assessresultsresultcalc / $summary->subjects, 2));
+            $details->avgeffort =  floatval(round($summary->effortmark / $summary->subjects, 2));
+            $details->avgattendance = floatval(round(($summary->classattendperterm / $summary->classcountperterm) * 100, 2));
+            $context[] = ['details' => $details];
+        }
+    }
+
+    return ['performance' => json_encode($context)];
 }

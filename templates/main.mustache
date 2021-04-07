@@ -28,7 +28,7 @@ along with Moodle. If not, see
             <div class="row align-items-center">
                 <div class="col">
                     <a href="#" data-toggle="collapse" data-target="#collapsehistory" aria-expanded="false"
-                        aria-controls="collapseExample">
+                        aria-controls="collapsehistory">
                         <div class="badge-actions"></div>
                         <span class="badge-name">{{#str}} gradehistory, block_grades_effort_report {{/str}}</span>
                     </a>
@@ -37,13 +37,23 @@ along with Moodle. If not, see
                     </div>
 
                     <a href="#" data-toggle="collapse" data-target="#collapseeffort" aria-expanded="false"
-                        aria-controls="collapseExample">
+                        aria-controls="collapseeffort">
                         <div class="badge-actions"></div>
                         <span class="badge-name">{{#str}} efforthistory, block_grades_effort_report {{/str}}</span>
                     </a>
                     <div class='collapse' id="collapseeffort">
                         {{> block_grades_effort_report/effort_history}}
                     </div>
+
+                    <a href="#" data-toggle="collapse" data-target="#collapsetrend" aria-expanded="false"
+                        aria-controls="collapsetrend">
+                        <div class="badge-actions"></div>
+                        <span class="badge-name">{{#str}} performancetrend, block_grades_effort_report {{/str}}</span>
+                    </a>
+                    <div class='collapse' id="collapsetrend">
+                        {{> block_grades_effort_report/performance_trend}}
+                    </div>
+
                 </div>
 
             </div>
