@@ -68,6 +68,7 @@ class block_grades_effort_report extends block_base
 
         $this->content = new \stdClass();
         $this->content->text = '';
+       
         try {
             if (grades_effort_report\can_view_on_profile()) {
 

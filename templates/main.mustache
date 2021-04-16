@@ -21,45 +21,49 @@ along with Moodle. If not, see
 
 }}
 
-<section class="node_category card d-inline-block w-100 mb-3">
-    <div class="card-body">
+<section>
+    <div class="card-body grade-effort-trend" data-username = {{username}}>
         <h3 class="lead">{{#str}} gradesandeffortreportitle, block_grades_effort_report {{/str}}</h3>
         <div class="container-fluid">
             <div class="row align-items-center">
                 <div class="col">
+                    <div id="collapsetrend">
+                        {{> block_grades_effort_report/performance_trend}}
+                    </div>
                     <a href="#" data-toggle="collapse" data-target="#collapsehistory" aria-expanded="false"
-                        aria-controls="collapsehistory">
+                        aria-controls="collapsehistory" class="grade-history">
                         <div class="badge-actions"></div>
                         <span class="badge-name">{{#str}} gradehistory, block_grades_effort_report {{/str}}</span>
                     </a>
-                    <div class='collapse' id="collapsehistory">
-                        {{> block_grades_effort_report/grades_history}}
+
+                    <div class='collapse ' id="collapsehistory">
+                        <div data-region="grade-history"></div>
+                        <div class='spinner-border  text-primary' id="grade-history-table" hidden>
+                            <span class="sr-only">Loading...</span>
+                        </div>
                     </div>
 
                     <a href="#" data-toggle="collapse" data-target="#collapseeffort" aria-expanded="false"
-                        aria-controls="collapseeffort">
+                        aria-controls="collapseeffort" class="grade-effort">
                         <div class="badge-actions"></div>
-                        <span class="badge-name">{{#str}} efforthistory, block_grades_effort_report {{/str}}</span>
+                        <span class="badge-name">{{#str}} efforthistory, block_grades_effort_report {{/str}} </span>
                     </a>
+
                     <div class='collapse' id="collapseeffort">
-                        {{> block_grades_effort_report/effort_history}}
-                    </div>
+                        <div data-region="grade-effort"></div>
+                        <div class='spinner-border  text-primary' id="grade-effort-table" hidden>
+                            <span class="sr-only">Loading...</span>
+                        </div>
 
-                    <a href="#" data-toggle="collapse" data-target="#collapsetrend" aria-expanded="false"
-                        aria-controls="collapsetrend">
-                        <div class="badge-actions"></div>
-                        <span class="badge-name">{{#str}} performancetrend, block_grades_effort_report {{/str}}</span>
-                    </a>
-                    <div class='collapse' id="collapsetrend">
-                        {{> block_grades_effort_report/performance_trend}}
                     </div>
-
                 </div>
-
             </div>
-
-
-
         </div>
     </div>
 </section>
+
+{{#js}}
+require(['block_grades_effort_report/controls'], function(mod) {
+mod.init();
+});
+{{/js}}

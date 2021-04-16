@@ -136,8 +136,6 @@ function get_templates_contexts($username)
 {
 
     $context = array_merge(
-        get_templates_context('grades', $username),
-        get_templates_context('effort', $username),
         get_performance_trend_context($username)
     );
     return $context;
@@ -459,5 +457,5 @@ function get_performance_trend_context($username)
         }
     }
 
-    return ['performance' => json_encode($context)];
+    return ['performance' => json_encode($context), 'username' => $username];
 }

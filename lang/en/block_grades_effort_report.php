@@ -45,8 +45,8 @@ $string['profileurl'] = '';
 $string['profileurl'] = 'Profile URL';
 $string['profileurl_desc'] =' Moodle\'s profile URL';
 
-$string['gradesandeffortreportitle'] = 'CGS Grades and Effort Reports';
-$string['gradehistory'] = 'Grade History';
+$string['gradesandeffortreportitle'] = 'Grades and Effort';
+$string['gradehistory'] = 'Grade History ';
 $string['efforthistory'] = ' Effort History';
 $string['performancetrend'] = 'Performance Trend';
 $string['invalidcourse'] = 'Invalid course';

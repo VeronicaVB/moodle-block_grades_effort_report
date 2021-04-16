@@ -15,12 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Grades and Effort block
- *
- * @package   block_grades_effort_report
  * @copyright 2021 Veronica Bermegui
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ *
  */
-$plugin->component = 'block_grades_effort_report';  // Recommended since 2.0.2 (MDL-26035). Required since 3.0 (MDL-48494)
-$plugin->version = 2021041600;  // YYYYMMDDHH (year, month, day, 24-hr time)
-$plugin->requires = 2010112400; // YYYYMMDDHH (This is the release version for Moodle 2.0)
+
+namespace block_grades_effort_report\external;
+
+defined('MOODLE_INTERNAL') || die();
+
+require_once($CFG->libdir.'/externallib.php');
+
+use external_api;
+
+class api extends external_api {
+
+    use get_context;
+    
+}
