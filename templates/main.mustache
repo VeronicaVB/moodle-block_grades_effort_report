@@ -22,7 +22,7 @@ along with Moodle. If not, see
 }}
 
 <section>
-    <div class="card-body grade-effort-trend" data-username = {{username}}>
+    <div class="card-body grade-effort-trend" data-username={{username}}>
         <h3 class="lead">{{#str}} gradesandeffortreportitle, block_grades_effort_report {{/str}}</h3>
         <div class="container-fluid">
             <div class="row align-items-center">
@@ -33,7 +33,9 @@ along with Moodle. If not, see
                     <a href="#" data-toggle="collapse" data-target="#collapsehistory" aria-expanded="false"
                         aria-controls="collapsehistory" class="grade-history">
                         <div class="badge-actions"></div>
-                        <span class="badge-name">{{#str}} gradehistory, block_grades_effort_report {{/str}}</span>
+                        <span class="badge-name">{{#str}} gradehistory, block_grades_effort_report {{/str}} </span>
+                        <span id="history-hide" class="fa fa-caret-right badge-name"></span>
+                        <span id="history-show" class="fa fa-caret-down badge-name"></span>
                     </a>
 
                     <div class='collapse ' id="collapsehistory">
@@ -47,6 +49,8 @@ along with Moodle. If not, see
                         aria-controls="collapseeffort" class="grade-effort">
                         <div class="badge-actions"></div>
                         <span class="badge-name">{{#str}} efforthistory, block_grades_effort_report {{/str}} </span>
+                        <span id="effort-hide" class="fa fa-caret-right badge-name"></span>
+                        <span id="effort-show" class="fa fa-caret-down badge-name"></span>
                     </a>
 
                     <div class='collapse' id="collapseeffort">
@@ -54,7 +58,6 @@ along with Moodle. If not, see
                         <div class='spinner-border  text-primary' id="grade-effort-table" hidden>
                             <span class="sr-only">Loading...</span>
                         </div>
-
                     </div>
                 </div>
             </div>

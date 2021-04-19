@@ -133,11 +133,8 @@ function get_performance_trend($username)
 }
 
 function get_templates_contexts($username)
-{
-
-    $context = array_merge(
-        get_performance_trend_context($username)
-    );
+{   
+    $context =  get_performance_trend_context($username);
     return $context;
 }
 
@@ -145,10 +142,11 @@ function get_templates_context($tabletorender, $username)
 {
 
     $gradesdata = $tabletorender == 'grades' ?  get_academic_grades($username) : get_academic_efforts($username);
-
+  
     if (empty($gradesdata)) {
         return [];
     }
+    
     $yearlevels['year'] = [];
     $yearlabels['labels'] = [];
     $subjects['subjects'] = [];
@@ -161,7 +159,7 @@ function get_templates_context($tabletorender, $username)
     $termlabels->t4 = 'T4';
 
     foreach ($gradesdata as $data) {
-
+      
         // Get the years.
         if (!in_array($data->studentyearlevel, $yearlevels['year'])) {
             $yearlevels['year'][] = $data->studentyearlevel;
@@ -175,7 +173,8 @@ function get_templates_context($tabletorender, $username)
             'year' => $data->studentyearlevel,
             'term' => $data->filesemester,
             'grade' => $data->assessresultsresult,
-            'effort' => $tabletorender == 'effort' ? $data->effortstuff : ''
+            'effort' => $tabletorender == 'effort' ? $data->effortstuff : '',
+            'bcolour' => $data->backgroundcolour            
         ];
 
         $subjects['subjects'][$data->classlearningareadescription][$data->classdescription][] = [
@@ -183,7 +182,7 @@ function get_templates_context($tabletorender, $username)
             'term' => $data->filesemester,
         ];
     }
-
+    
     foreach ($subjects['subjects'] as $area => $subjects) {
 
         foreach ($subjects as $s => $subject) {
@@ -241,7 +240,7 @@ function fill_dummy_grades($grades, $yearlabels, $effort = false)
     if ($missingterms > 0) {
         $grades =  add_dummy_grade_position($grades['grade'], $earliestyear, $latestyear, $totaltermstograde, $effort);
     }
-
+  
     return $grades;
 }
 
@@ -252,8 +251,9 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
     $counttermspergrade = [];
     $dummygrade = new \stdClass();
     $dummygrade->grade = '';
-
-    foreach ($grades as $g => $grade) {
+    $dummygrade->bcolour = '#FFFFFF';
+    foreach ($grades as  $grade) {
+     
 
         foreach ($grade as $gr => $gra) {
 
@@ -262,19 +262,18 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
                 if (!$effort) {
                     $g = new \stdClass();
                     $g->grade =  $grade['grade'];
-                    $counttermspergrade[$gra][$grade['term']] = $g;
+                    $counttermspergrade[$gra][$grade['term']] = ['g' =>$grade['grade'], 'bcolour' => $grade['bcolour']];
                 } else {
-                    $counttermspergrade[$gra][$grade['term']] = ['g' => $grade['grade'], 'e' => $grade['effort']];
+                    $counttermspergrade[$gra][$grade['term']] = ['g' => $grade['grade'], 'e' => $grade['effort'], 'bcolour' => $grade['bcolour']];
                 }
             }
         }
     }
-
+  
     //get the first year and last year the subject has data. 
     $earliest = array_key_first($counttermspergrade);
     $latest = array_key_last($counttermspergrade);
     $aux = $counttermspergrade;
-
     foreach ($counttermspergrade as $t => $terms) {
 
         $totaltoadd = $totaltermstograde - count($terms);
@@ -315,31 +314,36 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
 
         $results = $aux + $dummyyearsandgrades;
         ksort($results);
-
+        
         foreach ($results as $year => &$terms) {
             if (count($terms) < 4) {
                 for ($j = 1; $j < 5; $j++) {
                     if (!array_key_exists($j, $terms)) {
                         $dummygrade = new stdClass();
                         $dummygrade->grade = '';
+                        $dummygrade->bcolour = '#FFFFFF';
                         $terms[$j] = $dummygrade;
                     }
                 }
             }
             ksort($terms);
         }
+       
         $grades = [];
         // Rearange the array to feed the template.
         if ($effort) {
+          
             foreach ($results as $r => &$terms) {
                 foreach ($terms as $t => $term) {
                     $gradeaux = new \stdClass();
                     $gradeaux->grade = '';
-
+                    $gradeaux->bcolour = '#FFFFFF';
+                    
                     if (is_array($term)) {
                         if (isset($term['e'])) {
                             
                             $gradeaux->grade = $term['g'];
+                            $gradeaux->bcolour = $term['bcolour'];
                             $gradeaux->notes = (str_replace("[:]", "<br>", $term['e']));
                         }
                     }
@@ -347,17 +351,20 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
                 }
             }
         } else {
-
             foreach ($results as $year => &$terms) {
                 foreach ($terms as $t => $term) {
                     $gradeaux = new \stdClass();
-                    $gradeaux->grade = $term->grade;
+                    
+                    if (is_array($term)){
+                        $gradeaux->grade = $term['g'];
+                        $gradeaux->bcolour = $term['bcolour'];
+                    }
                     $grades['grade'][] = $gradeaux;
+                  
                 }
             }
         }
 
-      
         return  $grades;
     }
 }
