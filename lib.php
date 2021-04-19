@@ -146,6 +146,14 @@ function get_templates_context($tabletorender, $username)
     if (empty($gradesdata)) {
         return [];
     }
+
+    $colours = [
+        'LightGreen' => '#8fd9a8',
+        'LightSalmon' => '#ffba93',
+        '#F3FCD6' => '#F3FCD6',
+        'HotPink' => '#e05297',
+        'whitesmoke' => 'whitesmoke'
+    ];
     
     $yearlevels['year'] = [];
     $yearlabels['labels'] = [];
@@ -174,7 +182,8 @@ function get_templates_context($tabletorender, $username)
             'term' => $data->filesemester,
             'grade' => $data->assessresultsresult,
             'effort' => $tabletorender == 'effort' ? $data->effortstuff : '',
-            'bcolour' => $data->backgroundcolour            
+            'bcolour' => $colours[$data->backgroundcolour],
+            'fcolour' => $data->fontcolour           
         ];
 
         $subjects['subjects'][$data->classlearningareadescription][$data->classdescription][] = [
@@ -252,6 +261,8 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
     $dummygrade = new \stdClass();
     $dummygrade->grade = '';
     $dummygrade->bcolour = '#FFFFFF';
+    $dummygrade->fcolour = '#FFFFFF';
+
     foreach ($grades as  $grade) {
      
 
@@ -262,9 +273,9 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
                 if (!$effort) {
                     $g = new \stdClass();
                     $g->grade =  $grade['grade'];
-                    $counttermspergrade[$gra][$grade['term']] = ['g' =>$grade['grade'], 'bcolour' => $grade['bcolour']];
+                    $counttermspergrade[$gra][$grade['term']] = ['g' =>$grade['grade'], 'bcolour' => $grade['bcolour'], 'fcolour' => $grade['fcolour']];
                 } else {
-                    $counttermspergrade[$gra][$grade['term']] = ['g' => $grade['grade'], 'e' => $grade['effort'], 'bcolour' => $grade['bcolour']];
+                    $counttermspergrade[$gra][$grade['term']] = ['g' => $grade['grade'], 'e' => $grade['effort'], 'bcolour' => $grade['bcolour'], 'fcolour' => $grade['fcolour']];
                 }
             }
         }
@@ -322,6 +333,7 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
                         $dummygrade = new stdClass();
                         $dummygrade->grade = '';
                         $dummygrade->bcolour = '#FFFFFF';
+                        $dummygrade->fcolour = '#FFFFFF';
                         $terms[$j] = $dummygrade;
                     }
                 }
@@ -338,12 +350,14 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
                     $gradeaux = new \stdClass();
                     $gradeaux->grade = '';
                     $gradeaux->bcolour = '#FFFFFF';
+                    $gradeaux->fcolour = '#FFFFFF';
                     
                     if (is_array($term)) {
                         if (isset($term['e'])) {
                             
                             $gradeaux->grade = $term['g'];
                             $gradeaux->bcolour = $term['bcolour'];
+                            $gradeaux->fontcolour = $term['fcolour'];
                             $gradeaux->notes = (str_replace("[:]", "<br>", $term['e']));
                         }
                     }
@@ -358,6 +372,7 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
                     if (is_array($term)){
                         $gradeaux->grade = $term['g'];
                         $gradeaux->bcolour = $term['bcolour'];
+                        $gradeaux->fcolour = $term['fcolour'];
                     }
                     $grades['grade'][] = $gradeaux;
                   
@@ -423,6 +438,7 @@ function get_performance_trend_context($username)
 {
     $results = get_performance_trend($username);
     $trends = [];
+   
 
     if (empty($results)) {
         return [];
@@ -457,9 +473,15 @@ function get_performance_trend_context($username)
             $details = new \stdClass();
             $details->year = $year;
             $details->term = $term;
+
+            // Avgs/year.
             $details->avggrades = floatval(round($summary->assessresultsresultcalc / $summary->subjects, 2));
             $details->avgeffort =  floatval(round($summary->effortmark / $summary->subjects, 2));
             $details->avgattendance = floatval(round(($summary->classattendperterm / $summary->classcountperterm) * 100, 2));
+
+            // Average grade per term.
+
+
             $context[] = ['details' => $details];
         }
     }

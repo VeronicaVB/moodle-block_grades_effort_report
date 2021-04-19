@@ -62,21 +62,23 @@ define(['jquery', 'core/ajax', 'core/log', 'core/templates', 'block_grades_effor
         let attendance = [];
         let effort = [];
         let grades = [];
+        let gradeperterm = [];
 
         const TAGS = {
-            avgattendance: 'Attend Average',
-            avgeffort: 'Effort Average',
-            avggrades: 'Grade Average'
+            avgattendance: 'Average Attendance',
+            avgeffort: 'Average Effort',
+            avggrades: 'Average Grade',
+            avgradeterm: 'Average Grade',
         }
 
         for (let i = 0; i < performance.length; i++) {
             var p = performance[i];
-            console
-            let year = p.details.year.toString();
 
-            if (!labels.includes(year)) {
-                labels.push(year);
-            }
+            const year = p.details.year.toString();
+            const term = p.details.term.toString();
+
+            labels.push(['T' + term, year]);
+            gradeperterm.push(p.details.avggrades);
 
             grades.push(p.details.avggrades);
             effort.push(p.details.avgeffort)
@@ -89,7 +91,8 @@ define(['jquery', 'core/ajax', 'core/log', 'core/templates', 'block_grades_effor
             data: grades,
             fill: false,
             borderColor: '#31326f',
-            tension: 0.1
+            backgroundColor: '#31326f',
+            tension: 0.1,
         });
 
         sets.push({
@@ -97,6 +100,7 @@ define(['jquery', 'core/ajax', 'core/log', 'core/templates', 'block_grades_effor
             data: effort,
             fill: false,
             borderColor: '#ffc93c',
+            backgroundColor: '#ffc93c',
             tension: 0.1
         });
 
@@ -105,6 +109,7 @@ define(['jquery', 'core/ajax', 'core/log', 'core/templates', 'block_grades_effor
             data: attendance,
             fill: false,
             borderColor: '#1687a7',
+            backgroundColor: '#1687a7',
             tension: 0.1
         });
 
@@ -116,6 +121,7 @@ define(['jquery', 'core/ajax', 'core/log', 'core/templates', 'block_grades_effor
         const options = {
             responsive: true,
             maintainAspectRatio: false,
+
         }
 
         const plugin = {
@@ -130,11 +136,14 @@ define(['jquery', 'core/ajax', 'core/log', 'core/templates', 'block_grades_effor
             }
         };
 
+
+
         var myLineChart = new Chart(ctx, {
             type: 'line',
             data: data,
             options: options,
-            plugins: [plugin]
+            plugins: [plugin],
+
         });
 
     };
@@ -204,7 +213,7 @@ define(['jquery', 'core/ajax', 'core/log', 'core/templates', 'block_grades_effor
         $('.grade-history').on('click', function () {
             $(this).trigger("custom.historyHideCarretHandler");
         });
-        
+
     };
 
     Controls.prototype.getEffortHistory = function () {
@@ -213,7 +222,7 @@ define(['jquery', 'core/ajax', 'core/log', 'core/templates', 'block_grades_effor
         const username = self.username;
 
         $('#grade-effort-table').removeAttr('hidden');
-        
+
         $('#effort-show').toggle(); // Carret down is displayed
         $('#effort-hide').toggle(); // Carret right is hidden.
 
@@ -230,7 +239,7 @@ define(['jquery', 'core/ajax', 'core/log', 'core/templates', 'block_grades_effor
 
                 $('#grade-effort-table').attr('hidden', true);
                 region.replaceWith(htmlResult);
-                
+
             },
 
             fail: function (reason) {
@@ -238,7 +247,7 @@ define(['jquery', 'core/ajax', 'core/log', 'core/templates', 'block_grades_effor
                 Log.debug(reason);
                 region.replaceWith('<p class="alert alert-danger">Data not available. Please try later</p>');
             }
-            
+
         }]);
 
         $('.grade-effort').off('custom.getEffortHistory') // Remove listener.
@@ -251,17 +260,17 @@ define(['jquery', 'core/ajax', 'core/log', 'core/templates', 'block_grades_effor
 
     Controls.prototype.historyHideCarretHandler = function () {
 
-            $('#history-hide').toggle(); // Carret right. (Table is hidden)
-            $('#history-show').toggle(); // Carret down. (Table is displayed)
-            console.log("CLICK historyHideCarretHandler");
+        $('#history-hide').toggle(); // Carret right. (Table is hidden)
+        $('#history-show').toggle(); // Carret down. (Table is displayed)
+        console.log("CLICK historyHideCarretHandler");
 
     }
 
     Controls.prototype.effortHideCarretHandler = function () {
-      
-            $('#effort-hide').toggle(); // Carret right. (Table is hidden)
-            $('#effort-show').toggle(); // Carret down. (Table is displayed)
-            console.log("CLICK effortHideCarretHandler");
+
+        $('#effort-hide').toggle(); // Carret right. (Table is hidden)
+        $('#effort-show').toggle(); // Carret down. (Table is displayed)
+        console.log("CLICK effortHideCarretHandler");
 
     }
 

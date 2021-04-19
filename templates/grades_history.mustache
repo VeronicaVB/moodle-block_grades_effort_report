@@ -24,7 +24,7 @@
     <br>
     <div class="table-responsive">
     <table class="table table-bordered">
-        <thead>
+        <thead> 
             <tr class="text-center">
                 <th colspan=""></th>
                 {{#years_grades}}
@@ -36,7 +36,7 @@
     
         </thead>
         <tbody>
-            <tr>    
+            <tr class="text-center">    
                 <th>{{#str}} classlabel, block_grades_effort_report {{/str}}</th>
 
                 {{#years_grades}}
@@ -58,7 +58,7 @@
                     <td>{{name}}</td>
                     {{#grades}} 
                         {{#grade}}
-                        <td style="text-align: center; background-color: {{bcolour}}; ">{{grade}}</td>
+                        <td style="text-align: center; background-color: {{bcolour}}; color: {{fcolour}}">{{grade}}</td>
                         {{/grade}}
                     {{/grades}}
                 </tr>
