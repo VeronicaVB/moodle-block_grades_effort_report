@@ -134,6 +134,7 @@ function get_performance_trend($username)
 
 function get_templates_contexts($username)
 {   
+    //print_object(get_templates_context('grades', '35874'));  exit;
     $context =  get_performance_trend_context($username);
     return $context;
 }
@@ -441,7 +442,7 @@ function get_performance_trend_context($username)
    
 
     if (empty($results)) {
-        return [];
+        return ['username' => $username];
     }
 
     foreach ($results as $i => $result) {
@@ -478,9 +479,6 @@ function get_performance_trend_context($username)
             $details->avggrades = floatval(round($summary->assessresultsresultcalc / $summary->subjects, 2));
             $details->avgeffort =  floatval(round($summary->effortmark / $summary->subjects, 2));
             $details->avgattendance = floatval(round(($summary->classattendperterm / $summary->classcountperterm) * 100, 2));
-
-            // Average grade per term.
-
 
             $context[] = ['details' => $details];
         }

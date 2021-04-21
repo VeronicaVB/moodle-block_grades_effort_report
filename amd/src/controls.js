@@ -55,8 +55,14 @@ define(['jquery', 'core/ajax', 'core/log', 'core/templates', 'block_grades_effor
 
         const ctx = document.getElementById("trendChart");
         const performanceEl = document.querySelector("#performance");
+        if (performanceEl.dataset.performance === "") { // no data available.
+            const pEl = document.createElement('p');
+            pEl.innerHTML = 'Trend Data not available';
+            ctx.parentNode.replaceChild(pEl, ctx);
+            return;
+        }
         const performance = JSON.parse(performanceEl.dataset.performance);
-
+        console.log(performance);
         let labels = [];
         let sets = [];
         let attendance = [];
@@ -135,8 +141,6 @@ define(['jquery', 'core/ajax', 'core/log', 'core/templates', 'block_grades_effor
                 ctx.restore();
             }
         };
-
-
 
         var myLineChart = new Chart(ctx, {
             type: 'line',
