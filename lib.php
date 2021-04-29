@@ -474,11 +474,19 @@ function get_performance_trend_context($username)
             $details = new \stdClass();
             $details->year = $year;
             $details->term = $term;
-
+            
             // Avgs/year.
-            $details->avggrades = floatval(round($summary->assessresultsresultcalc / $summary->subjects, 2));
-            $details->avgeffort =  floatval(round($summary->effortmark / $summary->subjects, 2));
-            $details->avgattendance = floatval(round(($summary->classattendperterm / $summary->classcountperterm) * 100, 2));
+            if (!empty($summary->assessresultsresultcalc)) {
+                $details->avggrades = floatval(round($summary->assessresultsresultcalc / $summary->subjects, 2));
+            }
+
+            if (!empty($summary->effortmark)) {
+                $details->avgeffort =  floatval(round($summary->effortmark / $summary->subjects, 2));
+            }
+
+            if (!empty($summary->classattendperterm)) {
+                $details->avgattendance = floatval(round(($summary->classattendperterm / $summary->classcountperterm) * 100, 2));
+            }
 
             $context[] = ['details' => $details];
         }
