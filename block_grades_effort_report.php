@@ -74,7 +74,6 @@ class block_grades_effort_report extends block_base
 
                 $profileuser = $DB->get_record('user', ['id' => $PAGE->url->get_param('id')]);
                 $data = grades_effort_report\get_templates_contexts($profileuser->username, $this->instance->id, $profileuser->id); 
-          
                 $this->content->text = $OUTPUT->render_from_template('block_grades_effort_report/main', $data);
                
             }

@@ -9,7 +9,7 @@ span#effort-show {
 section.block.block_grades_effort_report.card.mb-3 {
   width: 46%;
   position: absolute;
-  top: 112px;
+  /* top: 112px; */
   left: 49.5%;
   margin-left: 2%;
 }

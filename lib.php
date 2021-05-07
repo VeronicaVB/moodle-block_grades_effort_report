@@ -134,8 +134,21 @@ function get_performance_trend($username)
 
 function get_templates_contexts($username, $instanceid, $userid)
 {   
-    //print_object(get_templates_context('grades', '35874'));  exit;
+    global $COURSE, $DB;
+   
     $context =  get_performance_trend_context($username, $instanceid, $userid);
+   
+    $efforturlparams = array('blockid' => $instanceid, 'courseid' => $COURSE->id, 'id' => $userid, 'history' => 'effort');
+    $gradeurlparams = array('blockid' => $instanceid, 'courseid' => $COURSE->id, 'id' => $userid, 'history' => 'grades');
+
+    $ghurl =  new \moodle_url('/blocks/grades_effort_report/view.php', $gradeurlparams);
+    $ehurl = new \moodle_url('/blocks/grades_effort_report/view.php', $efforturlparams);
+
+    $username = ($DB->get_record('user', ['id' => $userid]))->fullname;
+    $urlanduserdetails = ['username' => $username, 'instanceid' => $instanceid, 'userid' => $userid, 'gradeurl' => $ghurl, 'efforturl' => $ehurl];
+
+    $context = array_merge( $urlanduserdetails, $context,);
+  
     return $context;
 }
 
@@ -435,9 +448,8 @@ function can_view_on_profile()
     return false;
 }
 
-function get_performance_trend_context($username, $instanceid, $userid)
+function get_performance_trend_context($username)
 {
-    global $COURSE, $DB;
     $results = get_performance_trend($username);
     $trends = [];
    
@@ -493,11 +505,5 @@ function get_performance_trend_context($username, $instanceid, $userid)
         }
     }
  
-    $efforturlparams = array('blockid' => $instanceid, 'courseid' => $COURSE->id, 'id' => $userid, 'history' => 'effort');
-    $gradeurlparams = array('blockid' => $instanceid, 'courseid' => $COURSE->id, 'id' => $userid, 'history' => 'grades');
-
-    $ghurl =  new \moodle_url('/blocks/grades_effort_report/view.php', $gradeurlparams);
-    $ehurl = new \moodle_url('/blocks/grades_effort_report/view.php', $efforturlparams);
-    $username = ($DB->get_record('user', ['id' => $userid]))->fullname;
-    return ['performance' => json_encode($context), 'username' => $username, 'instanceid' => $instanceid, 'userid' => $userid, 'gradeurl' => $ghurl, 'efforturl' => $ehurl];
+    return ['performance' => json_encode($context)];
 }
