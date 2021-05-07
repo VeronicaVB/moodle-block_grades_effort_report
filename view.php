@@ -23,13 +23,15 @@
  */
 
 require_once('../../config.php');
-require_once($CFG->dirroot . '/blocks/grades_effort_repor/lib.php');
+require_once($CFG->dirroot . '/blocks/grades_effort_report/lib.php');
+
 
 global $DB, $OUTPUT, $PAGE, $USER;
 
 // Check for all required variables.
 $courseid = required_param('courseid', PARAM_INT);
 $blockid = required_param('blockid', PARAM_INT);
+$history = required_param('history', PARAM_TEXT); // 
 
 // Next look for optional variables.
 $id = optional_param('id', 0, PARAM_INT);
@@ -44,15 +46,28 @@ $PAGE->set_url('/blocks/grades_effort_report/view.php', array('id' => $courseid)
 $PAGE->set_pagelayout('standard');
 $PAGE->set_title(get_string('pluginname', 'block_grades_effort_report'));
 
-$PAGE->set_heading(get_string('grades_effort_report', 'block_grades_effort_report'));
+$heading = ($history == 'grades') ? get_string('gradehistory', 'block_grades_effort_report') :  get_string('efforthistory', 'block_grades_effort_report'); 
+$PAGE->set_heading($heading);
 
-
-$nav = $PAGE->navigation->add(get_string('profile', 'block_grades_effort_report'), $CFG->wwwroot.'/user/view.php?id='.$USER->id);
-$reporturl = new moodle_url('/blocks/grades_effort_report/view.php', array('id' => $id, 'courseid' => $courseid, 'blockid' => $blockid));
-$reportnode = $nav->add(get_string('performancetrend', 'block_grades_effort_report'), $reporturl);
+$nav = $PAGE->navigation->add(get_string('profile', 'block_grades_effort_report'), $CFG->wwwroot.'/user/view.php?id='. $id);
+$reporturl = new moodle_url('/blocks/grades_effort_report/view.php', array('id' => $id, 'courseid' => $courseid, 'blockid' => $blockid, 'history' => $history));
+$reportnode = $nav->add(get_string('gradesandeffortreportitle', 'block_grades_effort_report'), $reporturl);
 $reportnode->make_active();
 
 echo $OUTPUT->header();
 
-echo $OUTPUT->render_from_template('grades_effort_report/performance_trend', '');
+
+$profileuser = $DB->get_record('user', ['id' => $id]);
+$data =  \grades_effort_report\get_templates_context($history, $profileuser->username);
+
+if (is_siteadmin($USER)) {
+    $data['studentname'] = $profileuser->firstname . ' ' .  $profileuser->lastname;
+} else {
+    $data['studentname'] = $USER->firstname . ' ' .  $USER->lastname;
+}
+if ($history == 'grades') {
+    echo $OUTPUT->render_from_template('block_grades_effort_report/grades_history', $data);
+} else {
+    echo $OUTPUT->render_from_template('block_grades_effort_report/effort_history', $data);
+}
 echo $OUTPUT->footer();

@@ -20,14 +20,11 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/ajax', 'core/log', 'core/templates', 'block_grades_effort_report/chart',], function ($, Ajax, Log, Templates, Chart) {
+define(['jquery', 'core/ajax', 'core/log', 'block_grades_effort_report/chart'], function ($, Ajax, Log, Chart) {
     'use strict';
 
     function init() {
-        const element = document.querySelector('.grade-effort-trend');
-        const username = element.getAttribute('data-username');
-
-        var control = new Controls(username);
+        var control = new Controls();
         control.main();
     }
 
@@ -36,9 +33,8 @@ define(['jquery', 'core/ajax', 'core/log', 'core/templates', 'block_grades_effor
     *
     * @constructor
     */
-    function Controls(username) {
-        let self = this;
-        self.username = username;
+    function Controls() {
+        
     }
 
     /**
@@ -48,7 +44,7 @@ define(['jquery', 'core/ajax', 'core/log', 'core/templates', 'block_grades_effor
     Controls.prototype.main = function () {
         let self = this;
         self.trendChart();
-        self.setupEvents();
+
     };
 
     Controls.prototype.trendChart = function () {
@@ -151,132 +147,7 @@ define(['jquery', 'core/ajax', 'core/log', 'core/templates', 'block_grades_effor
         });
 
     };
-
-    Controls.prototype.setupEvents = function () {
-        let self = this;
-
-        $('.grade-history').on('custom.getGradeHistory', function () {
-            self.getGradeHistory();
-        });
-
-        $('.grade-history').click(function () {
-            $(this).trigger("custom.getGradeHistory");
-        });
-
-        $('.grade-history').on('custom.historyHideCarretHandler', function () {
-            self.historyHideCarretHandler();
-        });
-
-        $('.grade-effort').on('custom.getEffortHistory', function () {
-            self.getEffortHistory();
-        });
-
-        $('.grade-effort').click(function () {
-            $(this).trigger("custom.getEffortHistory");
-        });
-
-        $('.grade-effort').on('custom.effortHideCarretHandler', function () {
-            self.effortHideCarretHandler();
-        });
-
-    };
-
-    Controls.prototype.getGradeHistory = function () {
-        let self = this;
-        const username = self.username;
-
-        // Add spinner.
-        $('#grade-history-table').removeAttr('hidden');
-        $('#history-show').toggle(); // Carret down.
-        $('#history-hide').toggle(); // Carret right
-
-        Ajax.call([{
-            methodname: 'block_grades_effort_report_get_context',
-            args: {
-                table: 'grades',
-                username: username
-            },
-
-            done: function (response) {
-                const htmlResult = response.html;
-                const region = $('[data-region="grade-history"]');
-
-                $('#grade-history-table').attr('hidden', true);
-                region.replaceWith(htmlResult);
-            },
-
-            fail: function (reason) {
-                Log.error('block_grades_effort_report: Unable to get context.');
-                Log.debug(reason);
-                region.replaceWith('<p class="alert alert-danger">Data not available. Please try later</p>');
-            }
-        }]);
-
-        $('.grade-history').off('custom.getGradeHistory'); // Remove listener.
-
-        $('.grade-history').on('click', function () {
-            $(this).trigger("custom.historyHideCarretHandler");
-        });
-
-    };
-
-    Controls.prototype.getEffortHistory = function () {
-
-        let self = this;
-        const username = self.username;
-
-        $('#grade-effort-table').removeAttr('hidden');
-
-        $('#effort-show').toggle(); // Carret down is displayed
-        $('#effort-hide').toggle(); // Carret right is hidden.
-
-        Ajax.call([{
-            methodname: 'block_grades_effort_report_get_context',
-            args: {
-                table: 'effort',
-                username: username
-            },
-
-            done: function (response) {
-                const htmlResult = response.html;
-                const region = $('[data-region="grade-effort"]');
-
-                $('#grade-effort-table').attr('hidden', true);
-                region.replaceWith(htmlResult);
-
-            },
-
-            fail: function (reason) {
-                Log.error('block_grades_effort_report: Unable to get context.');
-                Log.debug(reason);
-                region.replaceWith('<p class="alert alert-danger">Data not available. Please try later</p>');
-            }
-
-        }]);
-
-        $('.grade-effort').off('custom.getEffortHistory') // Remove listener.
-
-        $('.grade-effort').on('click', function () {
-            $(this).trigger("custom.effortHideCarretHandler");
-        });
-
-    };
-
-    Controls.prototype.historyHideCarretHandler = function () {
-
-        $('#history-hide').toggle(); // Carret right. (Table is hidden)
-        $('#history-show').toggle(); // Carret down. (Table is displayed)
-        console.log("CLICK historyHideCarretHandler");
-
-    }
-
-    Controls.prototype.effortHideCarretHandler = function () {
-
-        $('#effort-hide').toggle(); // Carret right. (Table is hidden)
-        $('#effort-show').toggle(); // Carret down. (Table is displayed)
-        console.log("CLICK effortHideCarretHandler");
-
-    }
+    
 
     return { init: init }
 });

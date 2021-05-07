@@ -61,6 +61,7 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtext('block_grades_effort_report/dbperformancetrend', get_string('dbperformancetrend', 'block_grades_effort_report'), get_string('dbperformancetrend_desc', 'block_grades_effort_report'), ''));
 
     $settings->add(new admin_setting_configtext('block_grades_effort_report/profileurl', get_string('profileurl', 'block_grades_effort_report'), get_string('profileurl_desc', 'block_grades_effort_report'), ''));
+    
 
     
 
