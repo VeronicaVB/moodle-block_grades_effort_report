@@ -55,7 +55,7 @@ $string['profile'] = 'Profile';
 $string['gradeslabel'] = 'Grades';
 $string['learningarealabel'] = 'Learning area';
 $string['classlabel'] = 'Class';
-
+$string['title'] = '{$a->name} report';
 $string['reportunavailable'] = 'Grades and Effort Report unavailable';
 
 

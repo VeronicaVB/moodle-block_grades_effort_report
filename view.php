@@ -44,9 +44,10 @@ require_login($course);
 
 $PAGE->set_url('/blocks/grades_effort_report/view.php', array('id' => $courseid));
 $PAGE->set_pagelayout('standard');
-$PAGE->set_title(get_string('pluginname', 'block_grades_effort_report'));
 
 $heading = ($history == 'grades') ? get_string('gradehistory', 'block_grades_effort_report') :  get_string('efforthistory', 'block_grades_effort_report'); 
+
+$PAGE->set_title(get_string('title', 'block_grades_effort_report', ['name' => $heading]));
 $PAGE->set_heading($heading);
 
 $nav = $PAGE->navigation->add(get_string('profile', 'block_grades_effort_report'), $CFG->wwwroot.'/user/view.php?id='. $id);
