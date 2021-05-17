@@ -158,7 +158,7 @@ function get_templates_context($tabletorender, $username)
     $gradesdata = $tabletorender == 'grades' ?  get_academic_grades($username) : get_academic_efforts($username);
   
     if (empty($gradesdata)) {
-        return [];
+        return ;
     }
 
     $colours = [
@@ -455,7 +455,7 @@ function get_performance_trend_context($username)
    
 
     if (empty($results)) {
-        return ['username' => $username];
+        return ;
     }
 
     foreach ($results as $i => $result) {

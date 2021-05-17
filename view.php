@@ -61,11 +61,8 @@ echo $OUTPUT->header();
 $profileuser = $DB->get_record('user', ['id' => $id]);
 $data =  \grades_effort_report\get_templates_context($history, $profileuser->username);
 
-if (is_siteadmin($USER)) {
-    $data['studentname'] = $profileuser->firstname . ' ' .  $profileuser->lastname;
-} else {
-    $data['studentname'] = $USER->firstname . ' ' .  $USER->lastname;
-}
+$data['studentname'] = $profileuser->firstname . ' ' .  $profileuser->lastname;
+
 if ($history == 'grades') {
     echo $OUTPUT->render_from_template('block_grades_effort_report/grades_history', $data);
 } else {
