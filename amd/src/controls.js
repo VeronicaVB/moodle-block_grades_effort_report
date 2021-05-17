@@ -25,7 +25,7 @@ define(['jquery', 'core/ajax', 'core/log', 'block_grades_effort_report/chart'], 
 
     function init() {
 
-        var block = $('[data-block="academic_reports"]').first();
+        var block = $('[data-block="grades_effort_report"]').first();
 
         if (!block.length) {
             Log.debug('block_grades_effort_report/control: wrapping region not found!');
