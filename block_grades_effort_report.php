@@ -49,20 +49,14 @@ class block_grades_effort_report extends block_base
 
        profile_load_custom_fields($profileuser);
 
-       // Determing which user role we are rendering to.
-       // This block assumes users have custom profile fields for CampusRoles.
-       $userroles = array();
+        // Only render this block if the user is senior
         if (isset($profileuser->profile['CampusRoles'])) {
-            $userroles = explode(',', $profileuser->profile['CampusRoles']);
-            // Do regex checks.
-            foreach ($userroles as $reg) {
-                $regex = "/${reg}/i";
-                if ((preg_match($regex, 'primary') === 1)) {
-                    $this->content->text = '';
+            if (strpos($profileuser->profile['CampusRoles'], 'Primary') >= 0) {
+                 $this->content->text = '';
                     return $this->content;
-                }
             }
-        }
+           
+        } 
 
         // Check DB settings are available.
         if (
