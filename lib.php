@@ -455,7 +455,7 @@ function get_performance_trend_context($username)
    
 
     if (empty($results)) {
-        return ;
+        return $trends;
     }
 
     foreach ($results as $i => $result) {

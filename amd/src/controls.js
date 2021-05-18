@@ -57,13 +57,16 @@ define(['jquery', 'core/ajax', 'core/log', 'block_grades_effort_report/chart'], 
     Controls.prototype.trendChart = function () {
 
         const ctx = document.getElementById("trendChart");
-        const performanceEl = document.querySelector("#performance");
-        if (performanceEl.dataset.performance === "") { // no data available.
-            const pEl = document.createElement('p');
-            pEl.innerHTML = 'Trend Data not available';
-            ctx.parentNode.replaceChild(pEl, ctx);
+        if (!ctx) {
             return;
         }
+        const performanceEl = document.querySelector("#performance");
+        // if (performanceEl.dataset.performance === "") { // no data available.
+        //     const pEl = document.createElement('p');
+        //     pEl.innerHTML = 'Trend Data not available';
+        //     ctx.parentNode.replaceChild(pEl, ctx);
+        //     return;
+        // }
         const performance = JSON.parse(performanceEl.dataset.performance);
         console.log(performance);
         let labels = [];

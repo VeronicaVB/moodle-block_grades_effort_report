@@ -1,3 +1,11 @@
+{{#performance}}
 <div id="performance" data-performance="{{performance}}">
     <canvas id="trendChart" width="100%" height="400"></canvas>
 </div>
+{{/performance}}
+
+{{^performance}}
+<div id="performance" data-performance="{{performance}}">
+    <p>Trend Data not available</p>
+</div>
+{{/performance}}
