@@ -133,11 +133,11 @@ function get_performance_trend($username)
 }
 
 function get_templates_contexts($username, $instanceid, $userid)
-{   
+{
     global $COURSE, $DB;
-   
+
     $context =  get_performance_trend_context($username, $instanceid, $userid);
-   
+
     $efforturlparams = array('blockid' => $instanceid, 'courseid' => $COURSE->id, 'id' => $userid, 'history' => 'effort');
     $gradeurlparams = array('blockid' => $instanceid, 'courseid' => $COURSE->id, 'id' => $userid, 'history' => 'grades');
 
@@ -147,8 +147,8 @@ function get_templates_contexts($username, $instanceid, $userid)
     $username = ($DB->get_record('user', ['id' => $userid]))->fullname;
     $urlanduserdetails = ['username' => $username, 'instanceid' => $instanceid, 'userid' => $userid, 'gradeurl' => $ghurl, 'efforturl' => $ehurl];
 
-    $context = array_merge( $urlanduserdetails, $context,);
-  
+    $context = array_merge($urlanduserdetails, $context,);
+
     return $context;
 }
 
@@ -156,9 +156,9 @@ function get_templates_context($tabletorender, $username)
 {
 
     $gradesdata = $tabletorender == 'grades' ?  get_academic_grades($username) : get_academic_efforts($username);
-  
+
     if (empty($gradesdata)) {
-        return ;
+        return;
     }
 
     $colours = [
@@ -168,7 +168,7 @@ function get_templates_context($tabletorender, $username)
         'HotPink' => '#e05297',
         'whitesmoke' => 'whitesmoke'
     ];
-    
+
     $yearlevels['year'] = [];
     $yearlabels['labels'] = [];
     $subjects['subjects'] = [];
@@ -181,7 +181,7 @@ function get_templates_context($tabletorender, $username)
     $termlabels->t4 = 'T4';
 
     foreach ($gradesdata as $data) {
-      
+
         // Get the years.
         if (!in_array($data->studentyearlevel, $yearlevels['year'])) {
             $yearlevels['year'][] = $data->studentyearlevel;
@@ -197,7 +197,7 @@ function get_templates_context($tabletorender, $username)
             'grade' => $data->assessresultsresult,
             'effort' => $tabletorender == 'effort' ? $data->effortstuff : '',
             'bcolour' => $colours[$data->backgroundcolour],
-            'fcolour' => $data->fontcolour           
+            'fcolour' => $data->fontcolour
         ];
 
         $subjects['subjects'][$data->classlearningareadescription][$data->classdescription][] = [
@@ -205,7 +205,7 @@ function get_templates_context($tabletorender, $username)
             'term' => $data->filesemester,
         ];
     }
-    
+
     foreach ($subjects['subjects'] as $area => $subjects) {
 
         foreach ($subjects as $s => $subject) {
@@ -222,7 +222,7 @@ function get_templates_context($tabletorender, $username)
     }
     $s = [];
     $s['classes'] =  array_merge($subjectdetails['classess']); // Reset the grades array index to be able to render in the template.
-    
+
     $context = ['years' . '_' . $tabletorender => $yearlabels, 'subjectdetails' . '_' . $tabletorender => $s];
     return $context;
 }
@@ -264,7 +264,7 @@ function fill_dummy_grades($grades, $yearlabels, $effort = false)
     if ($missingterms > 0) {
         $grades =  add_dummy_grade_position($grades['grade'], $earliestyear, $latestyear, $totaltermstograde, $effort);
     }
-  
+
     return $grades;
 }
 
@@ -287,14 +287,14 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
                 if (!$effort) {
                     $g = new \stdClass();
                     $g->grade =  $grade['grade'];
-                    $counttermspergrade[$gra][$grade['term']] = ['g' =>$grade['grade'], 'bcolour' => $grade['bcolour'], 'fcolour' => $grade['fcolour']];
+                    $counttermspergrade[$gra][$grade['term']] = ['g' => $grade['grade'], 'bcolour' => $grade['bcolour'], 'fcolour' => $grade['fcolour']];
                 } else {
                     $counttermspergrade[$gra][$grade['term']] = ['g' => $grade['grade'], 'e' => $grade['effort'], 'bcolour' => $grade['bcolour'], 'fcolour' => $grade['fcolour']];
                 }
             }
         }
     }
-  
+
     //get the first year and last year the subject has data. 
     $earliest = array_key_first($counttermspergrade);
     $latest = array_key_last($counttermspergrade);
@@ -339,7 +339,7 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
 
         $results = $aux + $dummyyearsandgrades;
         ksort($results);
-        
+
         foreach ($results as $year => &$terms) {
             if (count($terms) < 4) {
                 for ($j = 1; $j < 5; $j++) {
@@ -354,21 +354,21 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
             }
             ksort($terms);
         }
-       
+
         $grades = [];
         // Rearange the array to feed the template.
         if ($effort) {
-          
+
             foreach ($results as $r => &$terms) {
                 foreach ($terms as $t => $term) {
                     $gradeaux = new \stdClass();
                     $gradeaux->grade = '';
                     $gradeaux->bcolour = '#FFFFFF';
                     $gradeaux->fcolour = '#FFFFFF';
-                    
+
                     if (is_array($term)) {
                         if (isset($term['e'])) {
-                            
+
                             $gradeaux->grade = $term['g'];
                             $gradeaux->bcolour = $term['bcolour'];
                             $gradeaux->fontcolour = $term['fcolour'];
@@ -382,14 +382,13 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
             foreach ($results as $year => &$terms) {
                 foreach ($terms as $t => $term) {
                     $gradeaux = new \stdClass();
-                    
-                    if (is_array($term)){
+
+                    if (is_array($term)) {
                         $gradeaux->grade = $term['g'];
                         $gradeaux->bcolour = $term['bcolour'];
                         $gradeaux->fcolour = $term['fcolour'];
                     }
                     $grades['grade'][] = $gradeaux;
-                  
                 }
             }
         }
@@ -405,6 +404,7 @@ function can_view_on_profile()
 
 
     $config = get_config('block_attendance_report');
+
     if ($PAGE->url->get_path() ==  $config->profileurl) {
         // Admin is allowed.
         $profileuser = $DB->get_record('user', ['id' => $PAGE->url->get_param('id')]);
@@ -412,47 +412,59 @@ function can_view_on_profile()
         if (is_siteadmin($USER) && $USER->username != $profileuser->username) {
             return true;
         }
-
+        
+        $mentor = get_mentor($profileuser);
         // Students are allowed to see timetables in their own profiles.
-        if ($profileuser->username == $USER->username && !is_siteadmin($USER)) {
+        
+        if ($profileuser->username == $USER->username && !is_siteadmin($USER) && $mentor) {
             return true;
         }
 
-        // Parents are allowed to view timetables in their mentee profiles.
-        $mentorrole = $DB->get_record('role', array('shortname' => 'parent'));
-
-        if ($mentorrole) {
-            $sql = "SELECT ra.*, r.name, r.shortname
-                FROM {role_assignments} ra
-                INNER JOIN {role} r ON ra.roleid = r.id
-                INNER JOIN {user} u ON ra.userid = u.id
-                WHERE ra.userid = ?
-                AND ra.roleid = ?
-                AND ra.contextid IN (SELECT c.id
-                    FROM {context} c
-                    WHERE c.contextlevel = ?
-                    AND c.instanceid = ?)";
-            $params = array(
-                $USER->id, //Where current user
-                $mentorrole->id, // is a mentor
-                CONTEXT_USER,
-                $profileuser->id, // of the prfile user
-            );
-            $mentor = $DB->get_records_sql($sql, $params);
-            if (!empty($mentor)) {
-                return true;
-            }
+        if (!empty($mentor)) {
+            return true;
         }
     }
 
     return false;
 }
 
+function get_mentor($profileuser)
+{
+    global $DB, $USER;
+    // Parents are allowed to view block in their mentee profiles.
+    $mentorrole = $DB->get_record('role', array('shortname' => 'parent'));
+    $mentor = null;
+
+    if ($mentorrole) {
+
+        $sql = "SELECT ra.*, r.name, r.shortname
+            FROM {role_assignments} ra
+            INNER JOIN {role} r ON ra.roleid = r.id
+            INNER JOIN {user} u ON ra.userid = u.id
+            WHERE ra.userid = ?
+            AND ra.roleid = ?
+            AND ra.contextid IN (SELECT c.id
+                FROM {context} c
+                WHERE c.contextlevel = ?
+                AND c.instanceid = ?)";
+        $params = array(
+            $USER->id, //Where current user
+            $mentorrole->id, // is a mentor
+            CONTEXT_USER,
+            $profileuser->id, // of the prfile user
+        );
+
+        $mentor = $DB->get_records_sql($sql, $params);
+    }
+
+    return $mentor;
+}
+
 function get_performance_trend_context($username)
 {
     $results = get_performance_trend($username);
     $trends = [];
-   
+
 
     if (empty($results)) {
         return $trends;
@@ -487,7 +499,7 @@ function get_performance_trend_context($username)
             $details = new \stdClass();
             $details->year = $year;
             $details->term = $term;
-            
+
             // Avgs/year.
             if (!empty($summary->assessresultsresultcalc)) {
                 $details->avggrades = floatval(round($summary->assessresultsresultcalc / $summary->subjects, 2));
@@ -504,6 +516,6 @@ function get_performance_trend_context($username)
             $context[] = ['details' => $details];
         }
     }
- 
+
     return ['performance' => json_encode($context)];
 }
