@@ -20,7 +20,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/ajax', 'core/log', 'block_grades_effort_report/chart'], function ($, Ajax, Log, Chart) {
+define(['jquery', 'core/log', 'block_grades_effort_report/chart'], function ($, Log, Chart) {
     'use strict';
 
     function init() {
@@ -61,14 +61,8 @@ define(['jquery', 'core/ajax', 'core/log', 'block_grades_effort_report/chart'], 
             return;
         }
         const performanceEl = document.querySelector("#performance");
-        // if (performanceEl.dataset.performance === "") { // no data available.
-        //     const pEl = document.createElement('p');
-        //     pEl.innerHTML = 'Trend Data not available';
-        //     ctx.parentNode.replaceChild(pEl, ctx);
-        //     return;
-        // }
         const performance = JSON.parse(performanceEl.dataset.performance);
-        console.log(performance);
+        Log.debug(performance);
         let labels = [];
         let sets = [];
         let attendance = [];

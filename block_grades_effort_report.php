@@ -47,16 +47,18 @@ class block_grades_effort_report extends block_base
 
         $config = get_config('block_grades_effort_report');
 
-       profile_load_custom_fields($profileuser);
+        profile_load_custom_fields($profileuser);
 
         // Only render this block if the user is senior
         if (isset($profileuser->profile['CampusRoles'])) {
-            if (strpos($profileuser->profile['CampusRoles'], 'Primary') >= 0) {
-                 $this->content->text = '';
-                    return $this->content;
+
+            $fromprimary = is_numeric(strpos($profileuser->profile['CampusRoles'], 'Primary'));
+
+            if ($fromprimary) {
+                $this->content->text = '';
+                return $this->content;
             }
-           
-        } 
+        }
 
         // Check DB settings are available.
         if (
@@ -79,14 +81,14 @@ class block_grades_effort_report extends block_base
 
         $this->content = new \stdClass();
         $this->content->text = '';
-       
+
         try {
             if (grades_effort_report\can_view_on_profile()) {
-                $data = grades_effort_report\get_templates_contexts($profileuser->username, $this->instance->id, $profileuser->id); 
+                $data = grades_effort_report\get_templates_contexts($profileuser->username, $this->instance->id, $profileuser->id);
                 empty($data) ? $this->content->text = '' : $this->content->text = $OUTPUT->render_from_template('block_grades_effort_report/main', $data);
             }
         } catch (\Exception $e) {
-           // var_dump($e);
+            // var_dump($e);
         }
 
         return $this->content;
