@@ -1,25 +1,25 @@
 span#history-show {
-  display: none;
+    display: none;
 }
 
 span#effort-show {
-  display: none;
+    display: none;
 }
 
 section.block.block_grades_effort_report.card.mb-3 {
-  width: 46.2%;
-  position: absolute;
-  left: 49.5%;
-  margin-left: 2%;
+    width: 46.2%;
+    position: absolute;
+    left: 49.5%;
+    margin-left: 2%;
 }
 
 @media only screen and (max-width: 1024px) {
- 
-  section.block.block_grades_effort_report.card.mb-3 {
-    width: 100%;
-    position: relative;
-    margin-left: 0;
-    left: 0;
-   
-  }
+
+    section.block.block_grades_effort_report.card.mb-3 {
+        width: 100%;
+        position: relative;
+        margin-left: 0;
+        left: 0;
+
+    }
 }

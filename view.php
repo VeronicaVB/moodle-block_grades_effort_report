@@ -31,7 +31,8 @@ global $DB, $OUTPUT, $PAGE, $USER;
 // Check for all required variables.
 $courseid = required_param('courseid', PARAM_INT);
 $blockid = required_param('blockid', PARAM_INT);
-$history = required_param('history', PARAM_TEXT); // 
+$history = required_param('history', PARAM_TEXT);
+$campus = required_param('campus', PARAM_TEXT);
 
 // Next look for optional variables.
 $id = optional_param('id', 0, PARAM_INT);
@@ -45,27 +46,42 @@ require_login($course);
 $PAGE->set_url('/blocks/grades_effort_report/view.php', array('id' => $courseid));
 $PAGE->set_pagelayout('standard');
 
-$heading = ($history == 'grades') ? get_string('gradehistory', 'block_grades_effort_report') :  get_string('efforthistory', 'block_grades_effort_report'); 
+$heading = ($history == 'grades') ? get_string('gradehistory', 'block_grades_effort_report') :  get_string('efforthistory', 'block_grades_effort_report');
 
 $PAGE->set_title(get_string('title', 'block_grades_effort_report', ['name' => $heading]));
 $PAGE->set_heading($heading);
 
-$nav = $PAGE->navigation->add(get_string('profile', 'block_grades_effort_report'), $CFG->wwwroot.'/user/view.php?id='. $id);
+$nav = $PAGE->navigation->add(get_string('profile', 'block_grades_effort_report'), $CFG->wwwroot . '/user/view.php?id=' . $id);
 $reporturl = new moodle_url('/blocks/grades_effort_report/view.php', array('id' => $id, 'courseid' => $courseid, 'blockid' => $blockid, 'history' => $history));
 $reportnode = $nav->add(get_string('gradesandeffortreportitle', 'block_grades_effort_report'), $reporturl);
 $reportnode->make_active();
 
 echo $OUTPUT->header();
 
-
 $profileuser = $DB->get_record('user', ['id' => $id]);
-$data =  \grades_effort_report\get_templates_context($history, $profileuser->username);
 
+$data =  \grades_effort_report\get_templates_context($history, $profileuser->username, $campus);
 $data['studentname'] = $profileuser->firstname . ' ' .  $profileuser->lastname;
 
-if ($history == 'grades') {
-    echo $OUTPUT->render_from_template('block_grades_effort_report/grades_history', $data);
-} else {
-    echo $OUTPUT->render_from_template('block_grades_effort_report/effort_history', $data);
+switch ($campus) {
+    case 'Primary':
+
+        if ($history == 'grades') {
+            echo $OUTPUT->render_from_template('block_grades_effort_report/grades_history_primary', $data);
+        } else {
+            echo $OUTPUT->render_from_template('block_grades_effort_report/effort_history_primary', $data);
+        }
+        break;
+    case 'Senior':
+        if ($history == 'grades') {
+            echo $OUTPUT->render_from_template('block_grades_effort_report/grades_history', $data);
+        } else {
+            echo $OUTPUT->render_from_template('block_grades_effort_report/effort_history', $data);
+        }
+        break;
+
+    default:
+        break;
 }
+
 echo $OUTPUT->footer();

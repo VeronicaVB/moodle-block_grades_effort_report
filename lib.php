@@ -31,7 +31,7 @@ namespace grades_effort_report;
 
 use stdClass;
 
-function get_academic_grades($username)
+function get_academic_grades($username, $campus)
 {
 
     try {
@@ -44,7 +44,12 @@ function get_academic_grades($username)
         // Connect to external DB.
         $externalDB->connect($config->dbhost, $config->dbuser, $config->dbpass, $config->dbname, '');
 
-        $sql = 'EXEC ' . $config->dbaccgrades . ' :id';
+        if ($campus == 'Primary') {
+            $sql = 'EXEC ' . $config->dbaccgradesprimary . ' :id';
+        } else {
+
+            $sql = 'EXEC ' . $config->dbaccgrades . ' :id';
+        }
 
         $params = array(
             'id' => $username,
@@ -58,15 +63,14 @@ function get_academic_grades($username)
         }
 
         $result->close();
-
-
         return $academicgrades;
+
     } catch (\Exception $ex) {
         throw $ex;
     }
 }
 
-function get_academic_efforts($username)
+function get_academic_efforts($username, $campus)
 {
     try {
 
@@ -78,7 +82,11 @@ function get_academic_efforts($username)
         // Connect to external DB
         $externalDB->connect($config->dbhost, $config->dbuser, $config->dbpass, $config->dbname, '');
 
-        $sql = 'EXEC ' . $config->dbefforthistory . ' :id';
+        if ($campus == 'Primary') {
+            $sql = 'EXEC ' . $config->dbefforthistoryprimary . ' :id';
+        } else {
+            $sql = 'EXEC ' . $config->dbefforthistory . ' :id';
+        }
 
         $params = array(
             'id' => $username,
@@ -99,7 +107,7 @@ function get_academic_efforts($username)
     }
 }
 
-function get_performance_trend($username)
+function get_performance_trend($username, $campus)
 {
     try {
 
@@ -110,13 +118,17 @@ function get_performance_trend($username)
 
         // Connect to external DB
         $externalDB->connect($config->dbhost, $config->dbuser, $config->dbpass, $config->dbname, '');
-
-        $sql = 'EXEC ' . $config->dbperformancetrend . ' :id';
+      
+        if ($campus == "Senior") {
+            $sql = 'EXEC ' . $config->dbperformancetrend . ' :id';
+        } else { 
+            $sql = 'EXEC ' . $config->dbprimaryperformancetrend . ' :id';
+        }
 
         $params = array(
             'id' => $username,
         );
-
+       
         $result = $externalDB->get_recordset_sql($sql, $params);
         $performancetrends = [];
 
@@ -132,30 +144,167 @@ function get_performance_trend($username)
     }
 }
 
-function get_templates_contexts($username, $instanceid, $userid)
+function get_templates_contexts($username, $instanceid, $userid, $campus)
 {
     global $COURSE, $DB;
-
-    $context =  get_performance_trend_context($username, $instanceid, $userid);
-
-    $efforturlparams = array('blockid' => $instanceid, 'courseid' => $COURSE->id, 'id' => $userid, 'history' => 'effort');
-    $gradeurlparams = array('blockid' => $instanceid, 'courseid' => $COURSE->id, 'id' => $userid, 'history' => 'grades');
+  
+    $context =  get_performance_trend_context($username, $campus);
+   
+    $efforturlparams = array('blockid' => $instanceid, 'courseid' => $COURSE->id, 'id' => $userid, 'history' => 'effort', 'campus' => $campus);
+    $gradeurlparams = array('blockid' => $instanceid, 'courseid' => $COURSE->id, 'id' => $userid, 'history' => 'grades', 'campus' => $campus);
 
     $ghurl =  new \moodle_url('/blocks/grades_effort_report/view.php', $gradeurlparams);
     $ehurl = new \moodle_url('/blocks/grades_effort_report/view.php', $efforturlparams);
 
     $username = ($DB->get_record('user', ['id' => $userid]))->fullname;
-    $urlanduserdetails = ['username' => $username, 'instanceid' => $instanceid, 'userid' => $userid, 'gradeurl' => $ghurl, 'efforturl' => $ehurl];
+    $urlanduserdetails = ['username' => $username, 'campus' => $campus, 'instanceid' => $instanceid, 'userid' => $userid, 'gradeurl' => $ghurl, 'efforturl' => $ehurl];
 
-    $context = array_merge($urlanduserdetails, $context,);
+    $context = array_merge($urlanduserdetails, $context);
 
     return $context;
 }
 
-function get_templates_context($tabletorender, $username)
-{
 
-    $gradesdata = $tabletorender == 'grades' ?  get_academic_grades($username) : get_academic_efforts($username);
+
+function get_templates_context($tabletorender, $username, $campus) {
+
+    if ($campus == 'Primary') {
+        return get_templates_context_primary($tabletorender, $username, $campus);
+    } else {
+        return get_templates_context_senior($tabletorender, $username, $campus);
+    }
+}
+
+function get_templates_context_primary($tabletorender, $username, $campus) {
+    $gradesdata = $tabletorender == 'grades' ?  get_academic_grades($username, $campus) : get_academic_efforts($username, $campus);
+
+    //$years ['years'] = [];
+    $context = [];
+    $filesemesterlabel = [
+        '3' => 'Report 2',
+        '4' => 'Report 3'
+    ]; // terms  are called reports. Report 1  is a welcome letter. It doesnt appear here.
+
+    foreach ($gradesdata as $data) {
+        //Year, semester, term, learning area
+        $subject = new \stdClass();
+        $subject->assessment = ( strtolower($data->assessareaheading) == 'grade' ? '' : $data->assessareaheading);
+        $subject->report = $filesemesterlabel[$data->filesemester];
+        $subject->grade = $data->assessresultdescription;
+        $context[$data->fileyear][$data->assessheading][$data->filesemester][] = $subject;
+    }
+
+    $years = [];
+    $assessments = [];
+    $contexts = [];
+    $lareas = [];
+    $learningareas = [];
+    $reports = [];
+    $reportsaux = [];
+    $assessmenttitles = [];
+
+    foreach($context as $year => $subjects) {
+        
+        $y = new \stdClass();
+        $y->year = $year;
+        $years['years'][] = $y;
+
+        foreach ($subjects as $area => $assigments) {
+
+            array_push($lareas, $area);
+
+            foreach ($assigments as $i => $assignment) {
+                array_push($reports, $filesemesterlabel[$i]);
+
+                foreach ($assignment as $j => $assess) {
+
+                    $details = new \stdClass();
+                    $details->assessment = $assess->assessment;
+                    $details->grade = $assess->grade;
+                    $details->area = $area;
+                    $details->year = $year;
+                    $assessments['assessdetails'][$area][] = $details;
+                    
+                    // Group by Area, assessment and year
+                    if (!in_array($assess->assessment,  $assessmenttitles[$area])) {
+                        $assessmenttitles[$area][$assess->assessment][] = $details;
+                    }
+                  
+                }
+            }
+        }
+    
+    }
+  
+    $reports = array_slice($reports, 0, (count($context) * 2) );
+    $lareas = array_unique($lareas);
+    //print_object($assessmenttitles);  exit;
+   
+    $dummyrow = new \stdClass(); // Fill the rest of the rows of the title area i.e: English, Mathematics 
+    $dummyrow->dummyvalue = '';
+    $dummyrows = [];
+    
+    for($a = 0; $a <  (count($context) * 2); $a++) {
+        $dummyrows[] = $dummyrow;
+    }
+
+    $dummyrepo = new \stdClass();
+    $dummyrepo->report = '';
+    $reportsaux['repos'][0] = $dummyrepo;
+
+    foreach($reports as $report) {
+        $repo = new \stdClass();
+        $repo->report = $report;
+        $reportsaux['repos'][] = $repo;
+    }
+  
+    foreach ($lareas as $area) {
+        $la = new \stdClass();
+        $la->area = $area;
+        $la->dummyrows =$dummyrows;
+        
+        $assesmentdetails = [];
+        foreach($assessmenttitles[$area] as $assessname => $assessmentyears) {
+
+         foreach($assessmentyears as $y =>  $assesdetails) {
+           
+              $grades = [];
+              foreach($assesdetails as $p => $assesdetail)
+                foreach($assesdetail as $index => $assesdets) {
+                    $grade = new \stdClass();
+                    if ($index == 'assessment') {
+                        $grade->assessment = $assesdets;
+                    }
+                    if ($index == 'grade') {
+                        $grade->grade = $assesdets;
+                    }
+                    $grades[] = $grade;
+                }
+                $gradesdetails = new \stdClass();
+
+                $gradesdetails->grades = $grades;
+                $assesmentdetails['assesmentdets'][] = $gradesdetails;
+            }
+      
+            $la->assesmentdetails = $assesmentdetails;
+        }
+        $learningareas['areas'][] = $la;
+    }
+
+    $contexts = [
+        'yearlabels' => $years,
+        'learningareas' => $learningareas,
+        'reports' => $reportsaux,
+        'assessments' => $assessments
+    ];
+
+   
+    return($contexts); 
+    
+}
+function get_templates_context_senior($tabletorender, $username, $campus) {
+
+    $gradesdata = $tabletorender == 'grades' ?  get_academic_grades($username, $campus) : get_academic_efforts($username, $campus);
 
     if (empty($gradesdata)) {
         return;
@@ -460,9 +609,19 @@ function get_mentor($profileuser)
     return $mentor;
 }
 
-function get_performance_trend_context($username)
-{
-    $results = get_performance_trend($username);
+function get_performance_trend_context($username, $campus) {
+  
+    if ($campus == 'Senior') {
+        return get_performance_trend_senior($username);
+    }  else {
+        return get_performance_trend_primary($username);
+
+    }
+}
+
+
+function get_performance_trend_senior($username) {
+    $results = get_performance_trend($username, 'Senior');
     $trends = [];
 
 
@@ -518,4 +677,45 @@ function get_performance_trend_context($username)
     }
 
     return ['performance' => json_encode($context)];
+}
+
+function get_performance_trend_primary($username) {
+
+    $results = get_performance_trend($username, 'Primary');
+
+    $trends = [];
+
+
+    if (empty($results)) {
+        return $trends;
+    }
+ 
+    foreach ($results as $i => $result) {
+        $summary = new \stdClass();
+        $summary->fileyear = $result->fileyear;
+        $summary->term = $result->filesemester;
+        $summary->percentageattended = $result->percentageattended;
+        $summary->gradeaverage = $result->gradeaverage;
+        $summary->effortaverage = $result->effortaverage;
+        $trends[$result->fileyear][$result->filesemester] = $summary;
+        $trends[$result->fileyear][$result->filesemester] = $summary;
+    }
+
+    foreach ($trends as $year => $summaries) {
+
+        foreach ($summaries as $term => $summary) {
+            $details = new \stdClass();
+            $details->year = $year;
+            $details->term = $term;
+            $details->avggrades = $summary->gradeaverage;
+            $details->gradeavgdesc = $summary->gradeavgdesc;
+            $details->effortvgdesc = $summary->effortvgdesc;
+            $details->effortaverage = $summary->effortaverage;
+            $details->percentageattended =  $summary->percentageattended;
+            $context[] = ['details' => $details];
+        }
+    }
+    
+    return ['performance' => json_encode($context)];
+
 }

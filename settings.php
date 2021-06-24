@@ -50,15 +50,19 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_configpasswordunmask('block_grades_effort_report/dbpass', get_string('dbpass', 'block_grades_effort_report'), '', ''));
 
-    $settings->add(new admin_setting_configtext('block_grades_effort_report/dbname', get_string('dbname', 'block_grades_effort_report'), '', ''));
+    $settings->add(new admin_setting_configtext('block_grades_effort_report/dbname', get_string('dbname', 'block_grades_effort_report'), get_string('dbname_desc', 'block_grades_effort_report'), 'localhost'), '');
 
-    $settings->add(new admin_setting_configtext('block_grades_effort_report/dbaccgrades', get_string('dbaccgrades', 'block_grades_effort_report'), get_string('dbaccgrades_desc', 'block_grades_effort_report'), ''));
+    $settings->add(new admin_setting_configtext('block_grades_effort_report/dbaccgrades', get_string('dbaccgradessenior', 'block_grades_effort_report'), get_string('dbaccgrades_desc', 'block_grades_effort_report'), ''));
+    
+    $settings->add(new admin_setting_configtext('block_grades_effort_report/dbaccgradesprimary', get_string('dbaccgradesprimary', 'block_grades_effort_report'), get_string('dbaccgrades_desc', 'block_grades_effort_report'), ''));
 
-    $settings->add(new admin_setting_configtext('block_grades_effort_report/dbefforthistory', get_string('dbefforthistory', 'block_grades_effort_report'), get_string('dbefforthistory_desc', 'block_grades_effort_report'), ''));
+    $settings->add(new admin_setting_configtext('block_grades_effort_report/dbefforthistory', get_string('dbefforthistorysenior', 'block_grades_effort_report'), get_string('dbefforthistory_desc', 'block_grades_effort_report'), ''));
 
-    $settings->add(new admin_setting_configtext('block_grades_effort_report/dbefforthistory', get_string('dbefforthistory', 'block_grades_effort_report'), get_string('dbefforthistory_desc', 'block_grades_effort_report'), ''));
+    $settings->add(new admin_setting_configtext('block_grades_effort_report/dbefforthistoryprimary', get_string('dbefforthistoryprimary', 'block_grades_effort_report'), get_string('dbefforthistory_desc', 'block_grades_effort_report'), ''));
 
     $settings->add(new admin_setting_configtext('block_grades_effort_report/dbperformancetrend', get_string('dbperformancetrend', 'block_grades_effort_report'), get_string('dbperformancetrend_desc', 'block_grades_effort_report'), ''));
+
+    $settings->add(new admin_setting_configtext('block_grades_effort_report/dbprimaryperformancetrend', get_string('dbprimaryperformancetrend', 'block_grades_effort_report'), get_string('dbperformancetrend_desc', 'block_grades_effort_report'), ''));
 
     $settings->add(new admin_setting_configtext('block_grades_effort_report/profileurl', get_string('profileurl', 'block_grades_effort_report'), get_string('profileurl_desc', 'block_grades_effort_report'), ''));
     
