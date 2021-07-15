@@ -20,14 +20,15 @@
     @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
     
     }}
-    
-    <div class="table-responsive">
+  
+    <div class="table-responsive ">
 
         <table class="table table-bordered">
         <h3 class="text-center"><bold>{{studentname}}</bold></h3>
+        <br>
         <thead> 
             
-            <tr class="text-center">
+            <tr class="reports-heading">
                 <th colspan=""></th>
                 {{#yearlabels}}
                 {{#years}}
@@ -39,7 +40,7 @@
         </thead>
         <tbody>
            
-            <tr>
+            <tr class="reports-heading">
                 {{#reports}}
                 {{#repos}}
                     <td>{{report}}</td>
@@ -50,23 +51,35 @@
             {{#learningareas}}
             {{#areas}}
             <tr>
-                <td>{{area}}</td>
+                <td  class="area-heading">{{area}}</td>
                 {{#dummyrows}}
-                    <td>{{dummyvalue}}</td>
+                    <td >{{dummyvalue}}</td>
                 {{/dummyrows}}
               
             </tr>
 
-            {{#assesmentdetails}}
-            {{#assesmentdets}}
+          {{#assesmentdetails}} 
+            {{#assesmentdets}} 
                 <tr>
-                    <td>{{assessment}}</td>
+                    <td class="assess-heading">
+                        {{assessname}}
+                    </td>
+
                     {{#grades}}
-                        <td>{{grade}}</td>
+                        {{#assesmentgrades}}
+
+                        <td {{#belowexpectation}} class="below-expectation text-center" {{/belowexpectation}} 
+                            {{#aboveexpectation}} class="above-expectation text-center" {{/aboveexpectation}}
+                            {{^belowexpectation}} {{^aboveexpectation}} class="inbetween-expectation text-center" {{/aboveexpectation}} {{/belowexpectation}}
+                            data-toggle="tooltip" data-placement="bottom" title = "{{grade}}">
+                            {{ibscale}}
+                        </td>
+
+                        {{/assesmentgrades}}
                     {{/grades}}
                 </tr>
-             {{/assesmentdets}}
-            {{/assesmentdetails}}
+            {{/assesmentdets}}
+          {{/assesmentdetails}}
             
             {{/areas}}
             {{/learningareas}}

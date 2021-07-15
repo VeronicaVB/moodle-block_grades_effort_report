@@ -13,6 +13,32 @@ section.block.block_grades_effort_report.card.mb-3 {
     margin-left: 2%;
 }
 
+td.area-heading {
+    background-color: #66A8D8;
+}
+
+td.assess-heading {
+    text-align: right;
+}
+
+tr.reports-heading {
+    text-align: center;
+    background-color: lightgrey;
+    /* font-weight: bold; */
+}
+
+td.below-expectation {
+    background-color: red;
+}
+
+td.above-expectation {
+    background-color: #8FD9A8;
+}
+
+td.inbetween-expectation {
+    background-color: #FBF6F0;
+}
+
 @media only screen and (max-width: 1024px) {
 
     section.block.block_grades_effort_report.card.mb-3 {

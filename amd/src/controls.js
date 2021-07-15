@@ -166,13 +166,12 @@ define(['jquery', 'core/log', 'block_grades_effort_report/chart'], function ($, 
 
         const performanceEl = document.querySelector("#performance");
         const performance = JSON.parse(performanceEl.dataset.performance);
-        Log.debug(performance);
+       
         let labels = [];
         let sets = [];
         let attendance = [];
         let effort = [];
         let grades = [];
-        let gradeperterm = [];
 
         const TAGS = {
             avgattendance: 'Average Attendance',
@@ -195,6 +194,80 @@ define(['jquery', 'core/log', 'block_grades_effort_report/chart'], function ($, 
             ae: 'Above expectations'
         }
 
+        // Segment helpers
+        const segments = (dataset) => {
+            Log.debug('en segments');
+            Log.debug(dataset);
+            let hasval = [];
+            let noval = [];
+            let segment = [];
+            
+            for (let i = 0; i < dataset.length; i++) {
+                
+                if (dataset[i] == undefined) {
+                    noval.push(i);
+                } else {
+                    hasval.push(i);
+                }
+                
+            }
+            
+            for(const index of noval) {
+                Log.debug("INDEX");
+                Log.debug(index);
+
+                if (index > 0 && index < (dataset.length - 1)) {
+                    const seg = [getStartPoint(dataset, index), getEndPoint(dataset, index)];
+                    segment.push(seg); //start-finish segment
+
+                }
+                
+            }
+            
+            segment = segment.filter(function( element ) {
+                return element !== undefined;
+            });
+
+            Log.debug(segment);
+            
+            //ctx.p0.skip || ctx.p1.skip ? value : undefined
+        };
+
+        const getEndPoint = (dataset, currindex) => {
+            let flag = true;
+            let i = ++currindex;
+            while (flag && i < dataset.length) {
+
+                if (dataset[i] != undefined)  {
+                    flag = false;
+                } else {
+                    i++;
+                }
+
+            }
+
+            return dataset[i];
+
+        };
+
+        const getStartPoint = (dataset, currindex) => {
+            let flag = true;
+            let i = --currindex;
+
+            while(flag && i > 0) {
+                if (dataset[i] != undefined)  {
+                    flag = false;
+                } else {
+                    i--;
+                }
+
+            }
+
+            return dataset[i];
+
+
+        }
+
         for (let i = 0; i < performance.length; i++) {
             var p = performance[i];
 
@@ -202,27 +275,40 @@ define(['jquery', 'core/log', 'block_grades_effort_report/chart'], function ($, 
             const term = p.details.term.toString();
 
             labels.push(['T' + term, year]);
-          
 
-            if (p.details.avggrades != null) {
-                grades.push(p.details.avggrades);
+            //Log.debug(p.details.avggrades);
+            if (p.details.avggrades == null) {
+                p.details.avggrades = undefined;
             }
+            grades.push(p.details.avggrades);
 
-            if (p.details.effortaverage != null) {
-                effort.push(p.details.effortaverage);
+            if (p.details.effortaverage == null) {
+                p.details.effortaverage = undefined;
             }
-         
-            if (p.details.percentageattended != null) {
-                attendance.push(p.details.percentageattended);
+            effort.push(p.details.effortaverage);
+
+            if (p.details.percentageattended == null) {
+                p.details.percentageattended = undefined;
             }
+            attendance.push(p.details.percentageattended);
 
         }
+      
+        const skipped = (ctx, value) => ctx.p0.skip || ctx.p1.skip ? value : undefined;
+        // End Segment helpers
+        
+        const sgrades = segments(grades);
+        const seffort = segments(effort);
+        const sattendance = segments( attendance);
 
         sets.push({
             label: TAGS.avggrades,
             data: grades,
             fill: false,
             borderColor: '#31326f',
+            segment: {
+                borderDash: ctx => skipped(ctx, sgrades),
+            },
             backgroundColor: '#31326f',
             tension: 0.1,
         });
@@ -232,6 +318,9 @@ define(['jquery', 'core/log', 'block_grades_effort_report/chart'], function ($, 
             data: effort,
             fill: false,
             borderColor: '#ffc93c',
+            segment: {
+                borderDash: ctx => skipped(ctx, seffort),
+            },
             backgroundColor: '#ffc93c',
             tension: 0.1
         });
@@ -241,6 +330,9 @@ define(['jquery', 'core/log', 'block_grades_effort_report/chart'], function ($, 
             data: attendance,
             fill: false,
             borderColor: '#1687a7',
+             segment: {
+                 borderDash: ctx => skipped(ctx, sattendance),
+             },
             backgroundColor: '#1687a7',
             tension: 0.1
         });
@@ -257,11 +349,11 @@ define(['jquery', 'core/log', 'block_grades_effort_report/chart'], function ($, 
                 tooltip: {
                     callbacks: {
                         label: function (context) {
-                         
+
                             if (context.dataset.label == TAGS.avggrades) {
-                              
+
                                 if (context.parsed.y > 0.00 && context.parsed.y <= 20.00) {
-                                    return TAGS_GRADES_DESC.be; 
+                                    return TAGS_GRADES_DESC.be;
                                 } else if (context.parsed.y > 20.00 && context.parsed.y <= 40.00) {
                                     return TAGS_GRADES_DESC.gs
                                 } else if (context.parsed.y > 40.00 && context.parsed.y <= 60.00) {
@@ -271,21 +363,21 @@ define(['jquery', 'core/log', 'block_grades_effort_report/chart'], function ($, 
                                 } else if (context.parsed.y > 80.00) {
                                     return TAGS_GRADES_DESC.ae
                                 }
-                            } 
+                            }
                             if (context.dataset.label == TAGS.avgeffort) {
-                                Log.debug(context.dataset.label); 
+                                Log.debug(context.dataset.label);
                                 Log.debug(context.parsed.y);
                                 if (parseFloat(context.parsed.y) > 0.00 && parseFloat(context.parsed.y) <= 25.00) {
-                                    return TAGS_EFFORTS_DESC.ni; 
+                                    return TAGS_EFFORTS_DESC.ni;
                                 } else if (parseFloat(context.parsed.y) > 25.00 && parseFloat(context.parsed.y) <= 50.00) {
                                     return TAGS_EFFORTS_DESC.avg
                                 } else if (parseFloat(context.parsed.y) > 50.00 && parseFloat(context.parsed.y) < 95.00) {
                                     return TAGS_EFFORTS_DESC.vg;
-                                } else if ( parseFloat(context.parsed.y) >= 95.00) {
+                                } else if (parseFloat(context.parsed.y) >= 95.00) {
                                     return TAGS_EFFORTS_DESC.e;
                                 }
                             } else {
-                             
+
                                 return context.parsed.y + "%";
                             }
                         }
@@ -293,10 +385,10 @@ define(['jquery', 'core/log', 'block_grades_effort_report/chart'], function ($, 
                 }
             },
             scales: {
-                y:{
+                y: {
                     suggestedMin: 25,
                     display: false,
-                  
+
                 }
             }
 
