@@ -200,6 +200,7 @@ function get_template_primary_grade_history($gradesdata) {
         '4' => 'Report 3'
     ]; // terms  are called reports. Report 1  is a welcome letter. It doesnt appear here.
 
+
     $ibscales = [
         5 => ['', 'Below expectations', '#FF0000'],
         4 => ['GS', 'Good Start', '#FFA07A'],
@@ -208,7 +209,7 @@ function get_template_primary_grade_history($gradesdata) {
         1 => ['', 'Above expectations', '#90EE90']
     ];
      
-
+  
     foreach ($gradesdata as $data) {
         //Year, semester, term, learning area
         $subject = new \stdClass();
@@ -249,8 +250,6 @@ function get_template_primary_grade_history($gradesdata) {
                     $details->area = $area;
                     $details->year = $year;
                     $details->ibscale = $ibscales[$assess->grade][0]; //The label to display
-                    // $details->belowexpectation = ($assess->grade == 5);
-                    // $details->aboveexpectation = ($assess->grade == 1);
                     $details->bgcolour = $ibscales[$assess->grade][2];
                     $details->filesemester = $assess->filesemester;
                     // Group by Area, assessment
@@ -266,7 +265,14 @@ function get_template_primary_grade_history($gradesdata) {
     
     }
 
+    if (count($reports) == 2) {
+        if ($reports[0] == $reports[1]) { // There are cases where there is only one term info, rename the first column
+            $reports[0] = $filesemesterlabel[3];
+        }
+    }
+  
     $reports = array_slice($reports, 0, (count($context) * 2) );
+
     $lareas = array_unique($lareas);
 
     // Get the first year we have records of and the last.
