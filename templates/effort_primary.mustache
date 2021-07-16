@@ -65,7 +65,9 @@
                     {{#grades}}
                         {{#assesmentgrades}}
 
-                        <td  style="text-align: center; background-color: {{bgcolour}}; "
+                        <td {{#belowexpectation}} class="below-expectation text-center" {{/belowexpectation}} 
+                            {{#aboveexpectation}} class="above-expectation text-center" {{/aboveexpectation}}
+                            {{^belowexpectation}} {{^aboveexpectation}} class="inbetween-expectation text-center" {{/aboveexpectation}} {{/belowexpectation}}
                             data-toggle="tooltip" data-placement="bottom" title = "{{grade}}">
                             {{ibscale}}
                         </td>

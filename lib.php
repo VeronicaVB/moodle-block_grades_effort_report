@@ -78,10 +78,9 @@ function get_academic_efforts($username, $campus)
 
         // Last parameter (external = true) means we are not connecting to a Moodle database.
         $externalDB = \moodle_database::get_driver_instance($config->dbtype, 'native', true);
-
         // Connect to external DB
         $externalDB->connect($config->dbhost, $config->dbuser, $config->dbpass, $config->dbname, '');
-
+        
         if ($campus == 'Primary') {
             $sql = 'EXEC ' . $config->dbefforthistoryprimary . ' :id';
         } else {
@@ -102,6 +101,7 @@ function get_academic_efforts($username, $campus)
         $result->close();
 
         return $academiceffort;
+        
     } catch (\Exception $ex) {
         throw $ex;
     }
@@ -176,21 +176,38 @@ function get_templates_context($tabletorender, $username, $campus) {
 }
 
 function get_templates_context_primary($tabletorender, $username, $campus) {
+    
     $gradesdata = $tabletorender == 'grades' ?  get_academic_grades($username, $campus) : get_academic_efforts($username, $campus);
+  
+    if ($tabletorender == 'grades') { 
 
-    $context = [];
+        $gradesdata = get_academic_grades($username, $campus) ;
+        return get_template_primary_grade_history($gradesdata);
+
+    } else {
+
+        $gradesdata = get_academic_efforts($username, $campus);
+        return get_template_primary_effort_history($gradesdata);;
+    }
+    
+}
+
+
+function get_template_primary_grade_history($gradesdata) {
+
     $filesemesterlabel = [
         '3' => 'Report 2',
         '4' => 'Report 3'
     ]; // terms  are called reports. Report 1  is a welcome letter. It doesnt appear here.
 
     $ibscales = [
-        5 => ['', 'Below expectations'],
-        4 => ['GS', 'Good Start'],
-        3 => ['MS', 'Making strides'],
-        2 => ['GRWI', 'Go run with it'],
-        1 => ['', 'Above expectations']
+        5 => ['', 'Below expectations', '#FF0000'],
+        4 => ['GS', 'Good Start', '#FFA07A'],
+        3 => ['MS', 'Making strides', '#F3FCD6'],
+        2 => ['GRWI', 'Go run with it', '#90EE90'],
+        1 => ['', 'Above expectations', '#90EE90']
     ];
+     
 
     foreach ($gradesdata as $data) {
         //Year, semester, term, learning area
@@ -212,8 +229,6 @@ function get_templates_context_primary($tabletorender, $username, $campus) {
     $reportsaux = [];
     $assessmenttitlesandgrades = [];
 
-    
-   
     foreach($context as $year => $subjects) {
         
         $y = new \stdClass();
@@ -234,8 +249,9 @@ function get_templates_context_primary($tabletorender, $username, $campus) {
                     $details->area = $area;
                     $details->year = $year;
                     $details->ibscale = $ibscales[$assess->grade][0]; //The label to display
-                    $details->belowexpectation = ($assess->grade == 5);
-                    $details->aboveexpectation = ($assess->grade == 1);
+                    // $details->belowexpectation = ($assess->grade == 5);
+                    // $details->aboveexpectation = ($assess->grade == 1);
+                    $details->bgcolour = $ibscales[$assess->grade][2];
                     $details->filesemester = $assess->filesemester;
                     // Group by Area, assessment
                     if (!in_array($assess->assessment,  $assessmenttitlesandgrades[$area])) {
@@ -250,7 +266,6 @@ function get_templates_context_primary($tabletorender, $username, $campus) {
     
     }
 
-     
     $reports = array_slice($reports, 0, (count($context) * 2) );
     $lareas = array_unique($lareas);
 
@@ -324,9 +339,7 @@ function get_templates_context_primary($tabletorender, $username, $campus) {
         'learningareas' => $learningareas,
     ];
 
-   
-    return($contexts); 
-    
+    return $contexts;
 }
 
 function sort_years_for_primary($assessments, $minyear, $maxyear) {
@@ -371,6 +384,162 @@ function sort_years_for_primary($assessments, $minyear, $maxyear) {
     }
     return $yearsfilled;
 }
+
+function get_template_primary_effort_history($gradesdata) {
+
+    $bgcolour[] = '';
+    foreach ($gradesdata as $data) {
+           
+        if ($data->filesemester == 3 ) {
+            $filesemesterlabel[$data->filesemester] = 'Report 2';
+        } else if ($data->filesemester == 4) {
+            $filesemesterlabel[$data->filesemester] = 'Report 3';
+        } else {
+            $filesemesterlabel[$data->filesemester] = '';
+        }
+        if ($data->assessresultsresult == 'A') {
+            $bgcolour[$data->assessresultsresult] = "#F3FCD6";          
+        } else if ($data->assessresultsresult == 'E' || $data->assessresultsresult == "VG") {
+            $bgcolour[$data->assessresultsresult] = '#90EE90';
+        }
+    }
+
+    $filesemesterlabel = array_unique($filesemesterlabel);
+    foreach ($gradesdata as $data) {
+        //Year, semester, term, learning area
+        $subject = new \stdClass();
+        $subject->assessment =  $data->classdescription;
+        $subject->report = $filesemesterlabel[$data->filesemester];
+        $subject->grade = $data->assessresultsresult;
+        $subject->title = end(explode(' ', $data->assessresultdescription));
+        $subject->bgcolour =  $bgcolour[ $subject->grade];
+        $subject->filesemester = $data->filesemester;
+        $context[$data->fileyear][$data->assessheading][$data->filesemester][] = $subject;
+        
+        
+    }
+
+
+    $years = [];
+    $assessments = [];
+    $contexts = [];
+    $lareas = [];
+    $learningareas = [];
+    $reports = [];
+    $reportsaux = [];
+    $assessmenttitlesandgrades = [];
+
+    foreach($context as $year => $subjects) {
+        
+        $y = new \stdClass();
+        $y->year = $year;
+        $years['years'][] = $y;
+
+        foreach ($subjects as $area => $assigments) {
+
+            array_push($lareas, $area);
+
+            foreach ($assigments as $i => $assignment) {
+                array_push($reports, $filesemesterlabel[$i]);
+              
+                foreach ($assignment as $j => $assess) {
+                    $details = new \stdClass();
+                    $details->assessment = $assess->assessment;
+                    $details->grade =  $assess->grade . " ($assess->title) ";
+                    $details->area = $area;
+                    $details->year = $year;
+                    $details->ibscale = $assess->grade; //The label to display
+                    $details->bgcolour = $bgcolour[$assess->grade];
+                    $details->filesemester = $assess->filesemester;
+                    // Group by Area, assessment
+                    if (!in_array($assess->assessment,  $assessmenttitlesandgrades[$area])) {
+                        $assessmenttitlesandgrades[$area][$assess->assessment][] = $details;
+                        $assessmenttitlesaux[$area][$assess->assessment][$year][$assess->filesemester][] = $details;
+                    }
+                  
+                }
+             
+            }
+        }
+    
+    }
+
+    $reports = array_slice($reports, 0, (count($context) * 2) );
+    $lareas = array_unique($lareas);
+
+    // Get the first year we have records of and the last.
+    $minyear = array_key_first($context);
+    $maxyear = array_key_last($context);
+    $columnstofill = (count($context) * 2);
+
+    $dummygrade1 = new \stdClass();
+    $dummygrade1->grade = '';
+    $dummygrade1->year = '';
+    $dummygrade1->filesemester = '';
+
+    $dummygrade2 = new \stdClass();
+    $dummygrade2->grade = '';
+    $dummygrade1->year = '';
+    $dummygrade2->filesemester = '4';
+
+    $dummyrow = new \stdClass(); // Fill the rest of the rows of the title area i.e: English, Mathematics 
+    $dummyrow->dummyvalue = '';
+    $dummyrows = [];
+  
+    for($a = 0; $a < $columnstofill; $a++) {
+        $dummyrows[] = $dummyrow;
+    }
+
+    $dummyrepo = new \stdClass();
+    $dummyrepo->report = '';
+    $reportsaux['repos'][0] = $dummyrepo;
+
+    foreach($reports as $report) {
+        $repo = new \stdClass();
+        $repo->report = $report;
+        $reportsaux['repos'][] = $repo;
+    }
+  
+    foreach ($lareas as $area) {
+        $la = new \stdClass();
+        $la->area = $area;
+        $la->dummyrows =$dummyrows;
+        $assesmentdetails = [];
+        
+        foreach ($assessmenttitlesandgrades[$area] as $assessname => $assessments) {
+            $gradesdetails = new \stdClass();
+            $gradesdetails->assessname = $assessname;
+            $grades = [];
+
+            if (count($assessments) < $columnstofill) { 
+                $tofill = $columnstofill - count($assessments);
+                for($i = 0; $i < $tofill; $i++) {
+                    array_push($assessments, $dummygrade1);
+                }
+
+            }
+           $assessments = sort_years_for_primary($assessments, $minyear, $maxyear);
+            foreach ($assessments as $y =>  $assessment) {
+                $grades['assesmentgrades'][] = $assessment;
+            }
+
+            $gradesdetails->grades = $grades;
+            $assesmentdetails['assesmentdets'][] = $gradesdetails;
+            $la->assesmentdetails = $assesmentdetails;
+        }
+        
+        $learningareas['areas'][] = $la;
+    }
+
+    $contexts = [
+        'yearlabels' => $years,
+        'reports' => $reportsaux,       
+        'learningareas' => $learningareas,
+    ];
+
+  return $contexts;
+}
+
 
 
 function get_templates_context_senior($tabletorender, $username, $campus) {

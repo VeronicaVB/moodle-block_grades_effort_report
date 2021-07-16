@@ -74,9 +74,9 @@ switch ($campus) {
         break;
     case 'Senior':
         if ($history == 'grades') {
-            echo $OUTPUT->render_from_template('block_grades_effort_report/grades_history', $data);
+            echo $OUTPUT->render_from_template('block_grades_effort_report/grades_history_senior', $data);
         } else {
-            echo $OUTPUT->render_from_template('block_grades_effort_report/effort_history', $data);
+            echo $OUTPUT->render_from_template('block_grades_effort_report/effort_history_senior', $data);
         }
         break;
 
