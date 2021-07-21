@@ -24,20 +24,8 @@ td.assess-heading {
 tr.reports-heading {
     text-align: center;
     background-color: lightgrey;
-    /* font-weight: bold; */
 }
 
-td.below-expectation {
-    background-color: red;
-}
-
-td.above-expectation {
-    background-color: #8FD9A8;
-}
-
-td.inbetween-expectation {
-    background-color: #FBF6F0;
-}
 
 @media only screen and (max-width: 1024px) {
 

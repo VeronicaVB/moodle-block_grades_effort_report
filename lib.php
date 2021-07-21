@@ -246,7 +246,7 @@ function get_template_primary_grade_history($gradesdata) {
                 foreach ($assignment as $j => $assess) {
                     $details = new \stdClass();
                     $details->assessment = $assess->assessment;
-                    $details->grade =  $ibscales[$assess->grade][1] . " ($assess->grade) ";
+                    $details->grade =  $ibscales[$assess->grade][1];
                     $details->area = $area;
                     $details->year = $year;
                     $details->ibscale = $ibscales[$assess->grade][0]; //The label to display
