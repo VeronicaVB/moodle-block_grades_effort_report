@@ -187,7 +187,7 @@ function get_templates_context_primary($tabletorender, $username, $campus) {
     } else {
 
         $gradesdata = get_academic_efforts($username, $campus);
-        return get_template_primary_effort_history($gradesdata);;
+        return get_template_primary_effort_history($gradesdata);
     }
     
 }
@@ -391,7 +391,8 @@ function sort_years_for_primary($assessments, $minyear, $maxyear) {
     return $yearsfilled;
 }
 
-function get_template_primary_effort_history($gradesdata) {
+/* Generate the context to display the grades by subject under a particular area. TODO: Keep here until it is decided that the new layout is better than this one.
+function get_template_primary_effort_history_old($gradesdata) {
 
     $bgcolour[] = '';
     foreach ($gradesdata as $data) {
@@ -542,10 +543,135 @@ function get_template_primary_effort_history($gradesdata) {
         'reports' => $reportsaux,       
         'learningareas' => $learningareas,
     ];
-
   return $contexts;
+}*/
+
+function get_template_primary_effort_history($gradesdata) {
+    
+    $bgcolour[] = '';
+    
+    foreach ($gradesdata as $data) {
+           
+        if ($data->filesemester == 3 ) {
+            $filesemesterlabel[$data->filesemester] = 'Report 2';
+        } else if ($data->filesemester == 4) {
+            $filesemesterlabel[$data->filesemester] = 'Report 3';
+        } else {
+            $filesemesterlabel[$data->filesemester] = '';
+        }
+        if ($data->assessresultsresult == 'A') {
+            $bgcolour[$data->assessresultsresult] = "#F3FCD6";          
+        } else if ($data->assessresultsresult == 'E' || $data->assessresultsresult == "VG") {
+            $bgcolour[$data->assessresultsresult] = '#90EE90';
+        }
+    }
+
+    $filesemesterlabel = array_unique($filesemesterlabel);
+    $allyears = [];
+   
+    foreach ($gradesdata as $data) {
+        //Year, semester, term, learning area
+        $subject = new \stdClass();
+        $subject->assessment =  $data->classdescription;
+        $subject->report = $filesemesterlabel[$data->filesemester];
+        $subject->grade = $data->assessresultsresult;
+        $subject->title = end(explode(' ', $data->assessresultdescription));
+        $subject->bgcolour =  $bgcolour[ $subject->grade];
+        $subject->filesemester = $data->filesemester;
+        $context[$data->assessheading][$data->fileyear][$data->filesemester][] = $subject;
+        $allyears[] = $data->fileyear;
+    }
+  
+    $allyears = array_unique($allyears);
+    $minyear = min($allyears);
+    $maxyear = max($allyears);
+    $dummygrade = new \stdClass();
+    $dummygrade->grade = '';
+    $dummygrade->year = '';
+    $dummygrade->filesemester = '';
+
+    $contextaux = [];
+    $areaheader = [];
+    $yearheader = [];
+ 
+    foreach($context as $area => $years) {
+       
+        $ah = new \stdClass();
+        $ah->area = $area;
+        $ah->grades = [];
+
+        add_dummy_grade_for_primary($years, $minyear, $maxyear);
+
+        foreach($years as $year=> $subject) {
+            $yh = new \stdClass();
+            $yh->year = $year;
+            $yearheader[$year] = $yh;
+
+            if (count($subject) <= 1) {
+                if (key($subject) == 3) {
+                    array_push($subject, [$dummygrade]);
+                    $years[$year] = $subject;
+                } else {
+                    array_unshift($subject, [$dummygrade]);
+                    $years[$year] = $subject;
+                }
+            }
+
+            if (count($subject) > 2) { // There might be cases where more than une subject in the  area has a grade in the same period. 
+                                      // because the reqeust was to group the grades by area, one of the grades has to be removed.
+                array_pop($subject);
+            }
+
+            $contextaux[$area][] = array_values(($subject));  // Group area per year
+        }
+
+        foreach($contextaux[$area] as $areaauxi => $subjectdet) {
+            foreach($subjectdet as $sd => $subdet){
+                foreach($subdet as $sdt) {
+                    if ($sdt != null) {
+                        array_push($ah->grades, $sdt);
+                    }
+                }
+            }
+        }
+
+        $areaheader[] = $ah;
+    } 
+
+    $yearheader = array_values(array_filter($yearheader));
+    $templatecontext = [
+        'learningareas' => $areaheader,
+        'years' => $yearheader
+    ];
+    return $templatecontext;
 }
 
+function add_dummy_grade_for_primary(&$years, $minyear, $maxyear) {
+   
+    $dummygrade = new \stdClass();
+    $dummygrade->grade = '00';
+    $dummygrade->year = '';
+    $dummygrade->filesemester = '';
+    $minyearwithgrades = min(array_keys($years));
+    $maxyearwithgrades = max(array_keys($years));
+    
+    // We need to check if the subject has grades for all the years. It there are years without grades, then fill it with a dummy object
+    if ($minyearwithgrades > $minyear) { // we need to add dummy values to previous years.
+        for ($i = $minyear; $i < $minyearwithgrades; $i++) {
+            $years[$i] = [$dummygrade, $dummygrade];
+        }
+    }
+
+    if($maxyearwithgrades < $maxyear) { // Fill future years
+
+        for($i = ++$maxyearwithgrades; $i <= $maxyear; $i++) {
+            $years[$i] = [$dummygrade, $dummygrade];
+        }
+
+    }
+
+    ksort($years);
+}
 
 
 function get_templates_context_senior($tabletorender, $username, $campus) {

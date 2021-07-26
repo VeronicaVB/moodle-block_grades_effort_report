@@ -29,10 +29,11 @@
         <thead> 
             <tr class="reports-heading">
                 <th colspan=""></th>
-                
+                {{#yearlabels}}
                 {{#years}}
                   <th colspan="2">{{year}} </th>               
                 {{/years}}
+                {{/yearlabels}}
             </tr>
         </thead>
         <tbody>
@@ -45,16 +46,13 @@
             </tr>
             
             {{#learningareas}}
-           
+            {{#areas}}
             <tr>
                 <td  class="area-heading">{{area}}</td>
-                {{#grades}} 
-               
-                    <td { style="text-align: center; background-color: {{bgcolour}}; "
-                    data-toggle="tooltip" data-placement="bottom" title = "{{title}}">
-                    {{grade}}
-                </td>
-                {{/grades}}
+                {{#dummyrows}}
+                    <td >{{dummyvalue}}</td>
+                {{/dummyrows}}
+              
             </tr>
 
           {{#assesmentdetails}} 
@@ -78,7 +76,7 @@
             {{/assesmentdets}}
           {{/assesmentdetails}}
             
-          
+            {{/areas}}
             {{/learningareas}}
             
         
