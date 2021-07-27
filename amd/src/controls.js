@@ -196,7 +196,6 @@ define(['jquery', 'core/log', 'block_grades_effort_report/chart'], function ($, 
 
         // Segment helpers
         const segments = (dataset) => {
-            Log.debug('en segments');
             Log.debug(dataset);
             let hasval = [];
             let noval = [];
@@ -213,24 +212,17 @@ define(['jquery', 'core/log', 'block_grades_effort_report/chart'], function ($, 
             }
             
             for(const index of noval) {
-                Log.debug("INDEX");
-                Log.debug(index);
-
                 if (index > 0 && index < (dataset.length - 1)) {
                     const seg = [getStartPoint(dataset, index), getEndPoint(dataset, index)];
                     segment.push(seg); //start-finish segment
-
                 }
-                
             }
             
             segment = segment.filter(function( element ) {
                 return element !== undefined;
             });
 
-            Log.debug(segment);
             
-            //ctx.p0.skip || ctx.p1.skip ? value : undefined
         };
 
         const getEndPoint = (dataset, currindex) => {
@@ -276,7 +268,6 @@ define(['jquery', 'core/log', 'block_grades_effort_report/chart'], function ($, 
 
             labels.push(['T' + term, year]);
 
-            //Log.debug(p.details.avggrades);
             if (p.details.avggrades == null) {
                 p.details.avggrades = undefined;
             }
@@ -365,8 +356,6 @@ define(['jquery', 'core/log', 'block_grades_effort_report/chart'], function ($, 
                                 }
                             }
                             if (context.dataset.label == TAGS.avgeffort) {
-                                Log.debug(context.dataset.label);
-                                Log.debug(context.parsed.y);
                                 if (parseFloat(context.parsed.y) > 0.00 && parseFloat(context.parsed.y) <= 25.00) {
                                     return TAGS_EFFORTS_DESC.ni;
                                 } else if (parseFloat(context.parsed.y) > 25.00 && parseFloat(context.parsed.y) <= 50.00) {
