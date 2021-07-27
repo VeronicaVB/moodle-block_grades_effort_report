@@ -919,36 +919,57 @@ function add_dummy_grade_position($grades, $earliestyear, $latestyear, $totalter
     }
 }
 
+
 // Parent view of own child's activity functionality
 function can_view_on_profile()
 {
     global $DB, $USER, $PAGE;
 
-
     $config = get_config('block_attendance_report');
-
     if ($PAGE->url->get_path() ==  $config->profileurl) {
         // Admin is allowed.
         $profileuser = $DB->get_record('user', ['id' => $PAGE->url->get_param('id')]);
 
-        if (is_siteadmin($USER) && $USER->username != $profileuser->username) {
-            return true;
-        }
-        
-        $mentor = get_mentor($profileuser);
-        // Students are allowed to see timetables in their own profiles.
-        
-        if ($profileuser->username == $USER->username && !is_siteadmin($USER) && $mentor) {
+        if (is_siteadmin($USER) && $profileuser->username != $USER->username) {
             return true;
         }
 
-        if (!empty($mentor)) {
+        // Students are allowed to see timetables in their own profiles.
+        if ($profileuser->username == $USER->username && !is_siteadmin($USER)) {
             return true;
+        }
+
+        // Parents are allowed to view timetables in their mentee profiles.
+        $mentorrole = $DB->get_record('role', array('shortname' => 'parent'));
+
+        if ($mentorrole) {
+
+            $sql = "SELECT ra.*, r.name, r.shortname
+                FROM {role_assignments} ra
+                INNER JOIN {role} r ON ra.roleid = r.id
+                INNER JOIN {user} u ON ra.userid = u.id
+                WHERE ra.userid = ?
+                AND ra.roleid = ?
+                AND ra.contextid IN (SELECT c.id
+                    FROM {context} c
+                    WHERE c.contextlevel = ?
+                    AND c.instanceid = ?)";
+            $params = array(
+                $USER->id, //Where current user
+                $mentorrole->id, // is a mentor
+                CONTEXT_USER,
+                $profileuser->id, // of the prfile user
+            );
+            $mentor = $DB->get_records_sql($sql, $params);
+            if (!empty($mentor)) {
+                return true;
+            }
         }
     }
 
     return false;
 }
+
 
 function get_mentor($profileuser)
 {
