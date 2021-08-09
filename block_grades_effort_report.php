@@ -50,6 +50,7 @@ class block_grades_effort_report extends block_base
         profile_load_custom_fields($profileuser);
 
         $notprimary = is_numeric(strpos($profileuser->profile['CampusRoles'], 'Primary'));
+        $parent = is_numeric(strpos($profileuser->profile['CampusRoles'], 'Parents'));
 
         // Check DB settings are available.
         if (
@@ -77,10 +78,10 @@ class block_grades_effort_report extends block_base
             if (grades_effort_report\can_view_on_profile()) {
                 $campus = !$notprimary ? 'Senior' : 'Primary'; 
                 $data = grades_effort_report\get_templates_contexts($profileuser->username, $this->instance->id, $profileuser->id, $campus);
-                empty($data) ? $this->content->text = '' : $this->content->text = $OUTPUT->render_from_template('block_grades_effort_report/main', $data);
+               ( empty($data) || $parent ) ? $this->content->text = '' : $this->content->text = $OUTPUT->render_from_template('block_grades_effort_report/main', $data);
             }
         } catch (\Exception $e) {
-            // var_dump($e);
+        ;
         }
 
         return $this->content;

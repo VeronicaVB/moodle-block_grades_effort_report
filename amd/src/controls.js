@@ -69,7 +69,7 @@ define(['jquery', 'core/log', 'block_grades_effort_report/chart'], function ($, 
         }
         const performanceEl = document.querySelector("#performance");
         const performance = JSON.parse(performanceEl.dataset.performance);
-        Log.debug(performance);
+       
         let labels = [];
         let sets = [];
         let attendance = [];
@@ -196,7 +196,6 @@ define(['jquery', 'core/log', 'block_grades_effort_report/chart'], function ($, 
 
         // Segment helpers
         const segments = (dataset) => {
-            Log.debug(dataset);
             let hasval = [];
             let noval = [];
             let segment = [];
